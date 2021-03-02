@@ -6,7 +6,6 @@
 import sys
 import math
 import numpy as np
-import spglib as sl
 from scipy.optimize import curve_fit
 
 # define Birch-Murnaghan equation of state for E(V) - V is input, the other variables are
@@ -17,6 +16,7 @@ def birch_murnaghan_eos(V, E_0, V_0, B_0, B_prime):
     return E_0 + 9.0*V_0*B_0/(16.0) * ((((V_0/V)**(2))**(1.0/3.0)-1)**(3)*B_prime
            + (((V_0/V)**(2))**(1.0/3.0) - 1)**(2)*(6.0-4.0*((V_0/V)**(2))**(1.0/3.0)))
 
+# determine the prefactor
 spacegroup = sys.argv[1]
 
 if spacegroup.startswith("P"):
@@ -29,6 +29,9 @@ elif spacegroup.startswith("I"):
     # BCC
     prefactor = 0.25
 
+# conversion factor from Angstrom to Bohr
+angstrom_to_bohr = 1.8897261254578281
+
 # define x and y data
 volumes = []
 energies = []
@@ -37,6 +40,9 @@ energies = []
 with open("energy.txt", "r") as energyfile:
 
     for line in energyfile:
+        if line.lstrip().startswith("#"):
+            # comment line
+            continue
         volumes.append(float(line.split()[1])) # volume
         energies.append(float(line.split()[2])) # energy
 
@@ -49,8 +55,8 @@ maxfev=100000) # impose very general boundaries to ensure correct result
 with open("birch_murnaghan_eos_parameters.txt", "w") as outfile:
 
     outfile.write("E_0 = {} eV\n".format(parameters[0]))
-    outfile.write("V_0 = {} A^3\n".format(parameters[1]))
-    outfile.write("lattice parameter a = {} A\n".format((prefactor*np.abs(parameters[1]))**(1.0/3.0)))
+    outfile.write("V_0 = {} A^3 = {} Bohr\n".format(parameters[1], parameters[1]*angstrom_to_bohr**3))
+    outfile.write("lattice parameter a = {} A\n".format((prefactor*np.abs(parameters[1]))**(1.0/3.0), (prefactor*np.abs(parameters[1]))**(1.0/3.0)*angstrom_to_bohr))
     outfile.write("B_0 = {} eV/A^3 = {} GPa\n".format(parameters[2], parameters[2]*1.60217662*10*10)) # conversion eV/A^3 to GPa
     outfile.write("B_prime = {} [dimensionless]".format(parameters[3]))
 
