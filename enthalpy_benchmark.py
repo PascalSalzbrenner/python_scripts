@@ -138,13 +138,13 @@ for line in dft_file:
                 if qmc_press < float(data[0]):
                     # QMC pressure is smaller - find the first that is >= the DFT pressure
                     qmc_pressure_list = qmc_dict[structure_name][0][:]
-                    for pressure in qmc_pressure_list:
+                    for i in range(len(qmc_pressure_list)):
                         if qmc_pressure_list[i] < float(data[0]):
                             # not there yet - reduce the lists in qmc_dict[structure_name] by that element
                             qmc_dict[structure_name][0] = qmc_dict[structure_name][0][1:]
                             qmc_dict[structure_name][1] = qmc_dict[structure_name][1][1:]
                         else:
-                            qmc_press = pressure
+                            qmc_press = qmc_pressure_list[i]
                             break
 
                 prev_press_diff=abs(float(data[0]) - qmc_press)
