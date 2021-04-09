@@ -4,6 +4,8 @@
 
 import numpy as np
 
+########################################### conversion between Cartesian and direct coordinates ###########################################
+
 def lattice_basis_to_cartesian(point, basis):
     """Function to convert an atom's coordinates, given in direct coordinates, into Cartesian coordinates.
     Concretely, with the units of the basis
