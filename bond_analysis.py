@@ -19,8 +19,15 @@
 # written by Pascal Salzbrenner, pts28
 
 import os
-from utilities import lattice_basis_to_cartesian
+from utilities import lattice_basis_to_cartesian, get_structure_from_castep, get_structure_from_cell
 from exceptions import InputError
+
+# define two functions to determine the bonds, either from a structure, or from the CASTEP file, where they are already present and must
+# only be read
+def get_bonds_from_castep
+
+def get_bonds_from_structure
+    # structure must already have been read and will be passed as input argument
 
 # get necessary input
 task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population - see the code header for descriptions) ").lower()
@@ -34,3 +41,32 @@ elif task == "bond_population":
 else:
     # a non-implemented task has been requested
     raise InputError("task", "You have requested a task which is not implemented. Task must be one of the following: PDF, RDF, bond_length, bond_population.")
+
+if input_file=="cell":
+    get_structure_from_cell
+
+if task == "pdf":
+
+    if input_file=="castep":
+        get_bonds_from_castep
+    else:
+        # any structure format will already have been parsed into the universal internal format
+        get_bonds_from_structure
+
+elif task == "rdf":
+
+    if input_file=="castep":
+        get_structure_from_castep
+
+elif task == "bond_length":
+
+    if input_file=="castep":
+        get_bonds_from_castep
+    else:
+        get_bonds_from_structure
+
+elif task == "bond_population":
+
+    get_bonds_from_castep
+
+# in the relevant if blocks, do the analysis
