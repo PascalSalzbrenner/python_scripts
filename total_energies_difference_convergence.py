@@ -15,7 +15,7 @@ second_energies = open("{}/{}".format(structure_2, filename), "r")
 comparison_file = open("{}_{}_{}_energy_difference.dat".format(structure_1.split("/")[0], structure_2.split("/")[0], filename.split(".")[0]), "w")
 
 comparison_file.write("# difference in DFT total energies calculated in {} and {}\n".format(structure_1, structure_2))
-comparison_file.write("# convergence parameter; energy difference ({}-{}) [meV]\n".format(structure_2, structure_1))
+comparison_file.write("# convergence parameter; energy difference ({}-{}) [meV/atom]\n".format(structure_2, structure_1))
 
 # read past the first line in both files
 
