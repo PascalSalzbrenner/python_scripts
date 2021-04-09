@@ -41,7 +41,7 @@ for line in enthalpies_file:
         continue
     elif line.lstrip().startswith("#"):
         # structure name
-        structure_name = line.lstrip().lstrip("#").lstrip()
+        structure_name = line.lstrip().lstrip("#").lstrip().rstrip("\n")
 
         enthalpies_in_dict[structure_name] = [[],[]]
     else:
@@ -53,7 +53,7 @@ for line in enthalpies_file:
 enthalpies_file.close()
 
 # the enthalpies for the old references are -1 * the old enthalpies for the new reference
-enthalpies_out_dict[old_reference] = [enthalpies_in_dict[new_reference][0], -1*np.array(enthalpies_in_dict[new_reference][1])]
+enthalpies_out_dict[current_reference] = [enthalpies_in_dict[new_reference][0], -1*np.array(enthalpies_in_dict[new_reference][1])]
 
 # reference
 for key, value in enthalpies_in_dict.items():

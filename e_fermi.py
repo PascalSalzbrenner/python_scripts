@@ -1,10 +1,8 @@
-#postprocessing utility to easily read the highest/lowest value of a specified band from VASP EIGENVAL output of a band structure calculation
+#postprocessing utility to easily read the energy of the highest occupied state at the band edge
 #written by Pascal Salzbrenner - pts28@cam.ac.uk
 
 import os
 import numpy as np
-
-band_index = input("Please enter the index of the band whose maximum and minimum you want to evaluate: ")
 
 # before reading, stitch together one big EIGENVAL file containing the entire path if the calculations have been split up
 
@@ -66,13 +64,11 @@ if ls_temp:
 
 eigenval = open("EIGENVAL", "r")
 
+# read the full EIGENVAL file and calculate the band gap
 #read past the six header lines
-
-line = eigenval.readline()
-
-while line.split():
-    line = eigenval.readline()
-    continue
+for line in eigenval:
+    if not line.split():
+        break
 
 #the next line gives the direct coordinates of the first k-point in its first three elements
 
@@ -81,17 +77,20 @@ k_point = line.split()
 
 #the k-points associated with the highest energy of an occupied band, and the lowest energy of an unoccupied band
 k_point_E_max = k_point[0:3]
-k_point_E_min = k_point[0:3]
 
-#the first k_point is treated differently, because we set the energy baselines
+#the first k_point is treated differently, because we use it to determine the highest occupied band, and to set the baselines
+
+is_occupied = True
+line = eigenval.readline()
 
 while line.split():
 
-    line_list = line.split()
-
-    if line_list[0] == band_index:
-        E_max = float(line_list[1])
-        E_min = float(line_list[1])
+    if is_occupied:
+        if np.isclose(float(line.split()[2]), 1):
+            max_occupied = line.split()[0]
+            E_max_occupied = float(line.split()[1])
+        else:
+            is_occupied = False
 
     line = eigenval.readline()
 
@@ -100,7 +99,7 @@ while line.split():
 line = eigenval.readline()
 k_point = line.split()
 
-#loop through the rest of the file
+#loop through the rest of the file, knowing the signatures of the highest occupied band
 
 for l in eigenval:
 
@@ -109,21 +108,15 @@ for l in eigenval:
         line = eigenval.readline()
         k_point = line.split()
 
-    elif l.split()[0] == band_index:
-        line_list = l.split()
-        if float(line_list[1]) > E_max:
-            E_max = float(line_list[1])
+    elif l.split()[0] == max_occupied:
+        if float(l.split()[1]) > E_max_occupied:
+            E_max_occupied = float(l.split()[1])
             k_point_E_max = k_point[0:3]
-        elif float(line_list[1]) < E_min:
-            E_min = float(line_list[1])
-            k_point_E_min = k_point[0:3]
 
 eigenval.close()
 
-#write output
-
-with open("band_{}_max_min.dat".format(band_index), "w") as outfile:
-    outfile.write("The band's highest energy is {} eV. In units of the reciprocal lattice vectors, it is at: {} {} {}\n".format(E_max, k_point_E_max[0],
+#write out Fermi energy
+with open("fermi_energy.dat", "w") as outfile:
+    outfile.write("Fermi energy = {} [eV]\n".format(E_max_occupied))
+    outfile.write("In units of the reciprocal lattice vectors, the valence band edge is at: {} {} {}\n".format(k_point_E_max[0],
     k_point_E_max[1], k_point_E_max[2]))
-    outfile.write("The band's lowest energy is {} eV. In units of the reciprocal lattice vectors, it is at: {} {} {}\n".format(E_min, k_point_E_min[0],
-    k_point_E_min[1], k_point_E_min[2]))
