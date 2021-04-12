@@ -7,6 +7,8 @@ from copy import deepcopy
 from exceptions import InputError
 from utilities import lattice_basis_to_cartesian, cartesian_to_lattice_basis
 
+degree_to_radian = np.pi/180.0 # the angles in lattice_abc are given in degree, but numpy functions require them in radians
+
 class Structure:
     """Class to contain all the data about a structure one might find useful"""
 
@@ -85,9 +87,11 @@ class Structure:
                     # see the explanation for determining lattice vectors from this format at
                     # https://en.wikipedia.org/wiki/Fractional_coordinates#In_crystallography
                     v_1 = [float(vector_lengths[0]), 0, 0]
-                    v_2 = [float(vector_lengths[1])*np.cos(float(angles[2])), float(vector_lengths[1])*np.sin(float(angles[2])), 0]
-                    v_3_x = float(vector_lengths[2])*np.cos(float(angles[1]))
-                    v_3_y = float(vector_lengths[2])*(np.cos(float(angles[0]))-np.cos(float(angles[2]))*np.cos(float(angles[1])))/(np.sin(float(angles[2])))
+                    v_2 = [float(vector_lengths[1])*np.cos(float(angles[2])*degree_to_radian),
+                    float(vector_lengths[1])*np.sin(float(angles[2])*degree_to_radian), 0]
+                    v_3_x = float(vector_lengths[2])*np.cos(float(angles[1])*degree_to_radian)
+                    v_3_y = float(vector_lengths[2])*(np.cos(float(angles[0])*degree_to_radian)-np.cos(float(angles[2])*degree_to_radian)
+                    *np.cos(float(angles[1])*degree_to_radian))/(np.sin(float(angles[2])*degree_to_radian))
                     v_3_z = np.sqrt(float(vector_lengths[2])**2-v_3_x**2-v_3_y**2)
 
                     self.lattice = np.array([v_1, v_2, [v_3_x, v_3_y, v_3_z]])
@@ -169,7 +173,7 @@ class Structure:
 
             # in this case, the positions have units - check for consistency with lattice units
 
-            if atom_units.lower() not in self.length_units.lower() and self.length_units.lower not in atom_units.lower():
+            if atom_units.lower() not in self.length_units.lower() and self.length_units.lower() not in atom_units.lower():
                 # note that this should be able to handle any situation
                 # if the units are not angstrom, they should be given in both blocks identically
                 # or if they are angstrom but given in both, they should also be identical
@@ -236,3 +240,15 @@ class Structure:
         self.positions_abs = []
         for atom in self.positions_frac:
             self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
+
+    def get_bonds(self):
+        """Function to do a bond length analysis of the parsed structure
+        Creates both bonds and bonds_population dictionaries.
+        They contain the same information, the key is always "atom_name_number_1-atom_name_number_2", where the atoms are numbered in the
+        order in which they appear in the input file (each different atom type starts from 1).
+        The value in the former dictionary is simply the bond's length (in the units of the structure file), whereas in the latter case it
+        is a tuple of the form (length). This is to preserve formal consistency with the get_bonds_from_castep function in
+        bond_analysis.py, as the bond populations can also be read from the .castep file. Calculating them requires the wavefunctions, so
+        can't be done simply from the structure, hence the tuple only has a single element, whereas it has two if the bonds are read from
+        the .castep file. This way, in processes that only require the length, either the output of this function or of
+        get_bonds_from_castep can be easily used, with the bond length accessed by dict[key][0]."""
