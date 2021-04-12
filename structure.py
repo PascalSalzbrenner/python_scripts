@@ -19,6 +19,8 @@ class Structure:
         self.length_units = "Angstrom"
         self.pressure_units = "GPa"
         self.atoms = [] # contains the element names in the same sequence as the positions are in their list
+        self.atom_numbers = [] # follows the numbering convention of CASTEP (all elements numbered from 1 to N_element)
+                               # but is implemented for all structures
 
         if self.filetype == "castep":
             self.get_structure_from_castep()
@@ -104,6 +106,9 @@ class Structure:
                 # initialise positions container
                 positions = []
 
+                # initialise container to count the numbers of the different atoms
+                atoms_numbers = {}
+
                 # initialise atom units
                 atom_units = "Angstrom"
 
@@ -123,6 +128,14 @@ class Structure:
                         else:
                             self.atoms.append(atom_data[0])
                             positions.append(np.array(atom_data[1:4], dtype=float))
+
+                            if atom_data[0] not in atoms_numbers.keys():
+                                # first atom of this type
+                                atoms_numbers[atom_data[0]] = 1
+                            else:
+                                atoms_numbers[atom_data[0]] += 1
+
+                            self.atom_numbers.append(atoms_numbers[atom_data[0]])
 
                 if "abs" in line.lower():
                     # positions directly in Cartesian coordinates
@@ -234,6 +247,7 @@ class Structure:
                     else:
                         atoms_data = atoms_line.split()
                         self.atoms.append(atoms_data[1])
+                        self.atom_numbers.append(atoms_data[2])
                         self.positions_frac.append(np.array(atoms_data[3:6], dtype=float))
 
         # fill in positions_abs
