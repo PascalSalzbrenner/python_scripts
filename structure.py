@@ -4,6 +4,7 @@
 
 import numpy as np
 from copy import deepcopy
+from operator import itemgetter
 from exceptions import InputError
 from utilities import lattice_basis_to_cartesian, cartesian_to_lattice_basis
 
@@ -257,12 +258,21 @@ class Structure:
 
     def get_bonds(self):
         """Function to do a bond length analysis of the parsed structure
-        Creates both bonds and bonds_population dictionaries.
-        They contain the same information, the key is always "atom_name_number_1-atom_name_number_2", where the atoms are numbered in the
-        order in which they appear in the input file (each different atom type starts from 1).
-        The value in the former dictionary is simply the bond's length (in the units of the structure file), whereas in the latter case it
-        is a tuple of the form (length). This is to preserve formal consistency with the get_bonds_from_castep function in
-        bond_analysis.py, as the bond populations can also be read from the .castep file. Calculating them requires the wavefunctions, so
-        can't be done simply from the structure, hence the tuple only has a single element, whereas it has two if the bonds are read from
-        the .castep file. This way, in processes that only require the length, either the output of this function or of
-        get_bonds_from_castep can be easily used, with the bond length accessed by dict[key][0]."""
+        Creates bonds list containing tuples ("atom_name_number_1-atom_name_number_2", length).
+        The bonds list generated from a .castep file in the get_bonds_from_castep function in bond_analysis.py generates tuples with the
+        population as a third element. As calculating them requires the wavefunctions, it can't be done simply from the structure, but in
+        tasks that only require the length, either the output of this function or of get_bonds_from_castep can be easily and equivalently
+        used, with the bond length accessed by bonds[bond_index][1]."""
+
+        # set up the bonds list
+        self.bonds = []
+
+        # iterate over every atom with a higher index (to avoid double counting) for each atom
+        for i in range(len(self.atoms)):
+            for j in range(i+1, len(self.atoms)):
+                difference_vector = self.positions_abs[j]-self.positions_abs[i]
+                self.bonds.append(("{}{}-{}{}".format(self.atoms[i], self.atom_numbers[i], self.atoms[j],
+                self.atom_numbers[j])), np.sqrt(difference_vector.dot(difference_vector)))
+
+        # sort by bond length
+        self.bonds.sort(key=itemgetter(1))
