@@ -16,7 +16,7 @@ class Structure:
         self.filetype = filename.split(".")[-1]
         self.length_units = "Angstrom"
         self.pressure_units = "GPa"
-        self.atoms = [] # sequence will be the same as the list for the positions
+        self.atoms = [] # contains the element names in the same sequence as the positions are in their list
 
         if self.filetype == "castep":
             self.get_structure_from_castep()
@@ -26,6 +26,11 @@ class Structure:
             # filetype that is not (currently) implemented
             raise InputError("Reading structure",
             "You have passed a structure for which no parsers is implemented. Currently supported: .castep, .cell files")
+
+    def __str__(self):
+        """This is what will be printed when str(Structure) is called"""
+
+        print(self.filename)
 
     def get_structure_from_cell():
         """Function to read the lattice vectors, atomic positions, and pressure (if present) from a CASTEP .cell file"""
@@ -146,11 +151,11 @@ class Structure:
 
                 if len(pressure_lines) == 3:
                     # no units given
-                    self.pressure = float(pressure_lines[2]) # single element due to the CASTEP pressure convention
+                    self.pressure = float(pressure_lines[2].split()[0])
                 else:
                     # units given
                     self.pressure_units = pressure_lines[0].split()[0]
-                    self.pressure = float(pressure_lines[3])
+                    self.pressure = float(pressure_lines[3].split()[0])
 
         # end of file reading
 
@@ -177,10 +182,57 @@ class Structure:
                 "Length units were given inconsistently between atoms and lattice. CASTEP may allow this (but why would you do it?), but this script does not.")
 
         else:
-            # the positions were given in absolute coordinates - do the inverse of the above
+            # the positions were given in fractional coordinates - do the inverse of the above
 
             for atom in self.positions_frac:
                 self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
 
     def get_structure_from_castep():
-        """Function to read the lattice vectors, atomic positions, and pressure from a CASTEP run .castep file"""
+        """Function to read the lattice vectors, atomic positions, and pressure from a CASTEP run .castep file
+        Note that this assumes the task was a geometry optimisation - there is no reason to read from the .castep rather than the .cell file
+        if a singlepoint calculation is carried out, and for MD postprocessing dedicated scripts (mdtep) already exist"""
+
+        structure_file = open("{}".format(self.filename), "r")
+
+        for line in structure_file:
+
+            if "External pressure/stress" in line:
+                # this block is only present once; the first element of the next line gives the pressure
+                self.pressure = float(structure_file.readline().split()[0])
+            elif "Final Configuration" in line:
+                # we are interested in the final configuration in a geometry optimisation run
+
+                # read past 6 lines
+                for i in range(6):
+                    structure_file.readline()
+
+                # the first three elements of each of the next three lines contain the lattice vectors
+                # initialise lattice vector list
+                lattice_vectors = []
+
+                for i in range(3):
+                    lattice_vectors.append(structure_file.readline().split()[:3])
+
+                self.lattice = np.array(lattice_vectors, dtype=float)
+
+                # read past the next 18 lines to get to the atomic positions
+                for i in range(18):
+                    structure_file.readline()
+
+                # initialise positions_frac - the .castep file always contains them like this
+                self.positions_frac = []
+
+                for atoms_line in structure_file:
+
+                    if "xxx" in atoms_line:
+                        # demarcates the end of the atoms block
+                        break
+                    else:
+                        atoms_data = atoms_line.split()
+                        self.atoms.append(atoms_data[1])
+                        self.positions_frac.append(np.array(atoms_data[3:6], dtype=float))
+
+        # fill in positions_abs
+        self.positions_abs = []
+        for atom in self.positions_frac:
+            self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
