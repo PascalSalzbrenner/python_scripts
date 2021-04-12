@@ -81,18 +81,64 @@ else:
 plotfile = open("{}.gnu".format(task), "w")
 plotfile.write("set terminal postscript eps colour\n")
 plotfile.write("set output '| epstopdf --filter --outfile={}.pdf'\n".format(task))
-plotfile.write("set key top right\n")
-plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")
 # these parts will be common to all tasks, whereas others depend on the task and are written in the corresponding if-block
 
 if task == "pdf":
 
+    # read the width of the bins in which the PDF data will be grouped
+    bin_width = float(input("What bin width [length units should be those of your input file] would you like to use for the PDF? "))
+    half_bin_width = bin_width/2
+
     if input_file_type=="castep":
         bonds, pressure = get_bonds_from_castep(input_file)
+        length_units = "[A]"
     else:
         structure = Structure(input_file)
         structure.get_bonds()
         bonds = structure.bonds
+        length_units = structure.length_units
+
+    # determine the length of the longest bond in the system
+    max_length = bonds[-1][1]
+
+    # set up a list and dictionary for the different bins
+    bin_value = 0
+    bin_list = []
+    bin_dict = {}
+
+    # first bin value
+    bin_list.append(bin_value)
+    bin_dict[str(bin_value)] = 0
+
+    # generate bin values
+    while bin <= max_length:
+
+        bin_value += bin_width
+
+        bin_list.append(bin_value)
+        bin_dict[str(bin_value)] = 0
+
+    # the final value in bin_list/bin_dict will be the upper bound of the final bin (no length can be larger than it by definition)
+
+    # sort bond lengths into bins
+    for bond in bonds:
+        bond_length = bond[1]
+
+        for i in range(len(bin_list)-1):
+            if bond_length >= bin_list[i] and bond_length < bin_list[i+1]:
+                bin_dict[str(bin_list[i])] += 1
+                break
+
+    # write output data
+    datafile = open("pdf.dat", "w")
+    datafile.write("# bin middle {}; number of bonds in bin\n")
+    for i in range(len(bin_list)-1):
+        datafile.write("{} {}\n".format(bin_list[i], bin_dict[str(bin_list[i])]))
+    datafile.close()
+
+    plotfile.write("set boxwidth {}\n".format(bin_width))
+    plotfile.write("set xlabel 'Bond length [{}]'\n".format(length_units))
+    plotfile.write("plot pdf.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle")
 
 elif task == "rdf":
 
@@ -105,7 +151,6 @@ elif task == "bond_length" or task == "bond_population":
     indices = input("What bonds (indexed from the shortest=1) do you want to take into account?\nPass a whitespace-separated list of an arbitrary number of bonds.\na-b will lead to an average of all bonds in the range [a,b]. ").split()
 
     # for these two tasks, loop over all files of the right type in the directory
-
     # determine all those files
     analysis_files = []
     for item in os.listdir():
@@ -172,8 +217,10 @@ elif task == "bond_length" or task == "bond_population":
     datafile.write("\n".join(data_list))
     datafile.close()
 
-
     # plotting stuff
+    plotfile.write("set key top right\n")
+    plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")
+
     # redefine gnuplot linetypes with nice colours
     plotfile.write("set linetype 1 lc rgb '#DC143C'\n")
     plotfile.write("set linetype 2 lc rgb '#DC143C'\n")
