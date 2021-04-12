@@ -20,8 +20,8 @@
 
 import os
 from operator import itemgetter
+from structure import Structure
 from exceptions import InputError
-from utilities import lattice_basis_to_cartesian, get_structure_from_castep, get_structure_from_cell
 
 # define two functions to determine the bonds, either from a structure, or from the CASTEP file, where they are already present and must
 # only be read
@@ -73,46 +73,28 @@ else:
     raise InputError("task",
     "You have requested a task which is not implemented. Task must be one of the following: PDF, RDF, bond_length, bond_population.")
 
-
-if input_file_type=="cell":
-    get_structure_from_cell
-
 if task == "pdf":
 
     if input_file_type=="castep":
-        get_bonds_from_castep
+        bonds = get_bonds_from_castep(input_file)
     else:
-        # any structure format will already have been parsed into the universal internal format
-        get_bonds_from_structure
+        structure = Structure(input_file)
+        structure.get_bonds()
+        bonds = structure.bonds
 
 elif task == "rdf":
 
-    if input_file_type=="castep":
-        get_structure_from_castep
+    structure = Structure(input_file)
 
     # construct supercell from the structure, loop over atoms in original cell
+
 elif task == "bond_length" or task == "bond_population":
 
-    # for this and bond_population, loop over all files of the right type in the directory
+    # for these two tasks, loop over all files of the right type in the directory
+    # determine all those files
 
-    if task == "bond_length":
-        data_index = 0 # the index which we will read from the dictionary values
-
-        if input_file_type=="castep":
-            get_bonds_from_castep
-        else:
-            get_bonds_from_structure
-    else:
-        data_index = 1
-
-        if input_file_type=="castep":
-            get_bonds_from_castep
-        else:
-            raise InputError("Bond population analysis",
-            "You have requested a bond population plot, but this is only possible with a .castep file as input.")
-
-elif task == "bond_population":
-
-    get_bonds_from_castep
-
-# in the relevant if blocks, do the analysis
+    # set up container
+    analysis_files = []
+    for item in os.listdir():
+        if "input_file_type" in item:
+            analysis_files.append(item)
