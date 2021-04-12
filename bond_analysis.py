@@ -24,30 +24,57 @@ from exceptions import InputError
 
 # define two functions to determine the bonds, either from a structure, or from the CASTEP file, where they are already present and must
 # only be read
-def get_bonds_from_castep
+def get_bonds_from_castep(filename):
+    """Function to read the data about the bonds directly from the .castep file, where a Mulliken bond analysis is done
+    :param str filename: the name of the .castep file
 
-def get_bonds_from_structure
-    # structure must already have been read and will be passed as input argument
+    :returns dict bonds: a dictionary in the format {"atom_name_number_1-atom_name_number_2": (length, population)}"""
 
+
+    # set up output dictionary
+    bonds = {}
+
+    bonds_file = open("{}".format(filename), "r")
+
+    for line in bonds_file:
+        if "Bond" in line:
+            # read past the next line; each line after that until a line full of "=" contains a bond
+            bonds_file.readline()
+
+            for bonds_line in bonds_file:
+                if "===" in bonds_line:
+                    break
+                else:
+                    bonds_data = bonds_line.split()
+                    bonds["{}{}-{}{}".format(bonds_data[0], bonds_data[1], bonds_data[3], bonds_data[4])] = (float(bonds_data[-1]),
+                                                                                                             float(bonds_data[-2]))
+
+    return bonds
+    
 # get necessary input
 task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population - see the code header for descriptions) ").lower()
 
-if task == "rdf" or task == "pdf" or task == "bond_length":
+if task == "rdf" or task == "pdf":
     # different input files are possible
-    input_file = input("Which input file type should be used? (currently supported: CASTEP, cell) ").lower()
+    input_file = input("What is the name of the input file? (currently supported: .castep, .cell files) ")
+    input_file_type = input_file.split(".")[-1]
+elif task == "bond_length":
+    input_file_type = input("What is the type of input file? (currently supported: castep, cell) ").lower()
 elif task == "bond_population":
     # only possile from a .castep file
-    input_file = "castep"
+    input_file_type = "castep"
 else:
     # a non-implemented task has been requested
-    raise InputError("task", "You have requested a task which is not implemented. Task must be one of the following: PDF, RDF, bond_length, bond_population.")
+    raise InputError("task",
+    "You have requested a task which is not implemented. Task must be one of the following: PDF, RDF, bond_length, bond_population.")
 
-if input_file=="cell":
+
+if input_file_type=="cell":
     get_structure_from_cell
 
 if task == "pdf":
 
-    if input_file=="castep":
+    if input_file_type=="castep":
         get_bonds_from_castep
     else:
         # any structure format will already have been parsed into the universal internal format
@@ -55,15 +82,29 @@ if task == "pdf":
 
 elif task == "rdf":
 
-    if input_file=="castep":
+    if input_file_type=="castep":
         get_structure_from_castep
 
-elif task == "bond_length":
+    # construct supercell from the structure, loop over atoms in original cell
+elif task == "bond_length" or task == "bond_population":
 
-    if input_file=="castep":
-        get_bonds_from_castep
+    # for this and bond_population, loop over all files of the right type in the directory
+
+    if task == "bond_length":
+        data_index = 0 # the index which we will read from the dictionary values
+
+        if input_file_type=="castep":
+            get_bonds_from_castep
+        else:
+            get_bonds_from_structure
     else:
-        get_bonds_from_structure
+        data_index = 1
+
+        if input_file_type=="castep":
+            get_bonds_from_castep
+        else:
+            raise InputError("Bond population analysis",
+            "You have requested a bond population plot, but this is only possible with a .castep file as input.")
 
 elif task == "bond_population":
 
