@@ -83,7 +83,7 @@ plotfile.write("set terminal postscript eps colour\n")
 plotfile.write("set output '| epstopdf --filter --outfile={}.pdf'\n".format(task))
 plotfile.write("set key top right\n")
 plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")
-# these parts will be common to all tasks, whereas others epend in the task and are written in the corresponding if-block
+# these parts will be common to all tasks, whereas others depend on the task and are written in the corresponding if-block
 
 if task == "pdf":
 
@@ -102,7 +102,7 @@ elif task == "rdf":
 
 elif task == "bond_length" or task == "bond_population":
 
-    indices = "What bonds (indexed from the shortest=1) do you want to take into account?\nPass a whitespace-separated list of an arbitrary number.\na-b will lead to an average of all bonds in the range [a,b]. ".split()
+    indices = input("What bonds (indexed from the shortest=1) do you want to take into account?\nPass a whitespace-separated list of an arbitrary number of bonds.\na-b will lead to an average of all bonds in the range [a,b]. ").split()
 
     # for these two tasks, loop over all files of the right type in the directory
 
@@ -213,7 +213,6 @@ elif task == "bond_length" or task == "bond_population":
         plot_string.append(" {0}.dat u 1:{1} w points pt 7 ps 1.5 title 'Bond(s) {2}', {0}.dat u 1:{1} smooth mcsplines notitle".format(task, i+2, indices[i]))
 
     plotfile.write(plot_string)
-
 
 elif task == "bonds":
 
