@@ -38,7 +38,10 @@ def get_bonds_from_castep(filename):
     bonds_file = open("{}".format(filename), "r")
 
     for line in bonds_file:
-        if "Bond" in line:
+        if "External pressure/stress" in line:
+            # this block is only present once; the first element of the next line gives the pressure
+            pressure = float(bonds_file.readline().split()[0])
+        elif "Bond" in line:
             # read past the next line; each line after that until a line full of "=" contains a bond
             bonds_file.readline()
 
@@ -55,7 +58,7 @@ def get_bonds_from_castep(filename):
     # sort by bond length
     bonds.sort(key=itemgetter(1))
 
-    return bonds
+    return (bonds, pressure)
 
 # get necessary input
 task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population - see the code header for descriptions) ").lower()
@@ -77,7 +80,7 @@ else:
 if task == "pdf":
 
     if input_file_type=="castep":
-        bonds = get_bonds_from_castep(input_file)
+        bonds, pressure = get_bonds_from_castep(input_file)
     else:
         structure = Structure(input_file)
         structure.get_bonds()
