@@ -13,6 +13,7 @@
 # bond length analysis: Takes the indices (bonds ranked by length from shortest to longest) of an arbitrary number of bonds and tracks their
 #                       length(s) as a function of pressure
 # bond population analysis: Likewise, but for the population. Only works from a .castep file
+# bonds: simply prints out data about the bonds in the bonds.dat file
 
 # if one of the latter two tasks is selected, the code reads all relevant files in the directory, and the pressure is determined from them
 
@@ -59,7 +60,7 @@ def get_bonds_from_castep(filename):
 # get necessary input
 task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population - see the code header for descriptions) ").lower()
 
-if task == "rdf" or task == "pdf":
+if task == "rdf" or task == "pdf" or task == "bonds":
     # different input files are possible
     input_file = input("What is the name of the input file? (currently supported: .castep, .cell files) ")
     input_file_type = input_file.split(".")[-1]
@@ -98,3 +99,39 @@ elif task == "bond_length" or task == "bond_population":
     for item in os.listdir():
         if "input_file_type" in item:
             analysis_files.append(item)
+
+elif task == "bonds":
+
+    if input_file_type == "castep":
+        bonds = get_bonds_from_castep(input_file)
+        length_units = "Angstrom"
+    else:
+        structure = Structure(input_file)
+        structure.get_bonds()
+        bonds = structure.bonds
+        length_units = structure.length_units
+
+    outfile = open("bonds.dat", "w")
+
+    first_line_str = "# Bond; Length [{}]; ".format(length_units)
+
+    if input_file_type == "castep":
+        # write out bond population as well
+        first_line_str += "Population; bond number\n"
+    else:
+        # only write the bond number
+        first_line_str += "bond number\n"
+
+    outfile.write(first_line_str)
+
+    for i in range(len(bonds)):
+
+        write_str = "{} {} ".format(bonds[i][0], bonds[i][1])
+
+        if input_file_type == "castep":
+            # write out bond population as well
+            write_str += "{} {}\n".format(bonds[i][2], i+1)
+
+        outfile.write(write_str)
+
+    outfile.close()
