@@ -176,6 +176,7 @@ class Structure:
                     self.pressure = float(pressure_lines[3].split()[0])
 
         # end of file reading
+        structure_file.close()
 
         # check whether the positions were given in absolute or fractional coordinates
         if not self.positions_frac:
@@ -250,6 +251,9 @@ class Structure:
                         self.atoms.append(atoms_data[1])
                         self.atom_numbers.append(atoms_data[2])
                         self.positions_frac.append(np.array(atoms_data[3:6], dtype=float))
+
+        # end of file reading
+        structure_file.close()
 
         # fill in positions_abs
         self.positions_abs = []
