@@ -30,9 +30,9 @@ class Structure:
     def __str__(self):
         """This is what will be printed when str(Structure) is called"""
 
-        print(self.filename)
+        return self.filename
 
-    def get_structure_from_cell():
+    def get_structure_from_cell(self):
         """Function to read the lattice vectors, atomic positions, and pressure (if present) from a CASTEP .cell file"""
 
         structure_file = open("{}".format(self.filename), "r")
@@ -65,8 +65,8 @@ class Structure:
                         self.length_units = lattice_lines[0]
                         index_shift = 1
 
-                    self.lattice = np.array([lattice_lines[index_shift].split()[:3], lattice_lines[1+index_shift].split()[:3]],
-                    lattice_lines[2+index_shift].split()[:3], dtype=float)
+                    self.lattice = np.array([lattice_lines[index_shift].split()[:3], lattice_lines[1+index_shift].split()[:3],
+                    lattice_lines[2+index_shift].split()[:3]], dtype=float)
                 else:
                     # abc format
 
@@ -127,7 +127,7 @@ class Structure:
                     # set up fractional coordinates container
                     # it is not guaranteed that the lattice is passed before the positions, so we can't do the conversion here
                     self.positions_frac = []
-                elif "frac" line.lower():
+                elif "frac" in line.lower():
                     # positions in fractional coordinates - do the inverse of the above
                     self.positions_frac = deepcopy(positions)
 
@@ -187,7 +187,7 @@ class Structure:
             for atom in self.positions_frac:
                 self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
 
-    def get_structure_from_castep():
+    def get_structure_from_castep(self):
         """Function to read the lattice vectors, atomic positions, and pressure from a CASTEP run .castep file
         Note that this assumes the task was a geometry optimisation - there is no reason to read from the .castep rather than the .cell file
         if a singlepoint calculation is carried out, and for MD postprocessing dedicated scripts (mdtep) already exist"""
