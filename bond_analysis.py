@@ -19,8 +19,9 @@
 # written by Pascal Salzbrenner, pts28
 
 import os
-from utilities import lattice_basis_to_cartesian, get_structure_from_castep, get_structure_from_cell
+from operator import itemgetter
 from exceptions import InputError
+from utilities import lattice_basis_to_cartesian, get_structure_from_castep, get_structure_from_cell
 
 # define two functions to determine the bonds, either from a structure, or from the CASTEP file, where they are already present and must
 # only be read
@@ -28,11 +29,10 @@ def get_bonds_from_castep(filename):
     """Function to read the data about the bonds directly from the .castep file, where a Mulliken bond analysis is done
     :param str filename: the name of the .castep file
 
-    :returns dict bonds: a dictionary in the format {"atom_name_number_1-atom_name_number_2": (length, population)}"""
+    :returns list bonds: a list in the format [("atom_name_number_1-atom_name_number_2", length, population)], sorted by bond length"""
 
-
-    # set up output dictionary
-    bonds = {}
+    # set up output list
+    bonds = []
 
     bonds_file = open("{}".format(filename), "r")
 
@@ -46,11 +46,16 @@ def get_bonds_from_castep(filename):
                     break
                 else:
                     bonds_data = bonds_line.split()
-                    bonds["{}{}-{}{}".format(bonds_data[0], bonds_data[1], bonds_data[3], bonds_data[4])] = (float(bonds_data[-1]),
-                                                                                                             float(bonds_data[-2]))
+                    bonds.append(("{}{}-{}{}".format(bonds_data[0], bonds_data[1], bonds_data[3], bonds_data[4]), (float(bonds_data[-1]),
+                                  float(bonds_data[-2]))))
+
+    bonds_file.close()
+
+    # sort by bond length
+    bonds.sort(key=itemgetter(1))
 
     return bonds
-    
+
 # get necessary input
 task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population - see the code header for descriptions) ").lower()
 
