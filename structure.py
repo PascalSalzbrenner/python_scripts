@@ -32,6 +32,8 @@ class Structure:
             raise InputError("Reading structure",
             "You have passed a structure for which no parsers is implemented. Currently supported: .castep, .cell files")
 
+        self.num_atoms = len(self.atoms)
+
     def __str__(self):
         """This is what will be printed when str(Structure) is called"""
 
