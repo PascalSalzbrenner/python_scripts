@@ -46,7 +46,7 @@ def get_bonds_from_castep(filename):
                     break
                 else:
                     bonds_data = bonds_line.split()
-                    bonds.append(("{}{}-{}{}".format(bonds_data[0], bonds_data[1], bonds_data[3], bonds_data[4]), (float(bonds_data[-1]),
+                    bonds.append(("{}{} - {}{}".format(bonds_data[0], bonds_data[1], bonds_data[3], bonds_data[4]), (float(bonds_data[-1]),
                                   float(bonds_data[-2]))))
 
     bonds_file.close()

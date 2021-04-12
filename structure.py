@@ -275,7 +275,7 @@ class Structure:
         for i in range(len(self.atoms)):
             for j in range(i+1, len(self.atoms)):
                 difference_vector = self.positions_abs[j]-self.positions_abs[i]
-                self.bonds.append(("{}{}-{}{}".format(self.atoms[i], self.atom_numbers[i], self.atoms[j],
+                self.bonds.append(("{}{} - {}{}".format(self.atoms[i], self.atom_numbers[i], self.atoms[j],
                 self.atom_numbers[j]), np.sqrt(difference_vector.dot(difference_vector))))
 
         # sort by bond length
