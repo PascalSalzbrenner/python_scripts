@@ -15,7 +15,7 @@
 # bond population analysis: Likewise, but for the population. Only works from a .castep file
 # bonds: simply prints out data about the bonds - name, length, (if read from a .castep file) populations - in the bonds.dat file
 
-# if one of the latter two tasks is selected, the code reads all relevant files in the directory, and the pressure is determined from them
+# if bond_length or bond_population is selected, the code reads all relevant files in the directory, with the pressure determined from them
 
 # written by Pascal Salzbrenner, pts28
 
@@ -42,6 +42,9 @@ def get_bonds_from_castep(filename):
         if "External pressure/stress" in line:
             # this block is only present once; the first element of the next line gives the pressure
             pressure = float(bonds_file.readline().split()[0])
+        elif "Total number of ions in cell" in line:
+            # last element of this line gives the number of atoms
+            num_atoms = float(line.split()[-1])
         elif "Bond" in line:
             # read past the next line; each line after that until a line full of "=" contains a bond
             bonds_file.readline()
@@ -59,7 +62,7 @@ def get_bonds_from_castep(filename):
     # sort by bond length
     bonds.sort(key=itemgetter(1))
 
-    return (bonds, pressure)
+    return bonds, pressure, num_atoms
 
 # get necessary input
 task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population, bonds - see the code header for descriptions) ").lower()
@@ -96,13 +99,14 @@ if task == "pdf":
     num_decimals = len(str(half_bin_width)) - 2
 
     if input_file_type=="castep":
-        bonds, pressure = get_bonds_from_castep(input_file)
+        bonds, pressure, num_atoms = get_bonds_from_castep(input_file)
         length_units = "[A]"
     else:
         structure = Structure(input_file)
         structure.get_bonds()
         bonds = structure.bonds
         length_units = structure.length_units
+        num_atoms = structure.num_atoms
 
     # determine the length of the longest bond in the system
     max_length = bonds[-1][1]
@@ -135,18 +139,21 @@ if task == "pdf":
                 bin_occupations[i] += 1
                 break
 
+    bin_occupations = bin_occupations / num_atoms
+
     # write output data
     datafile = open("pdf{}.dat".format(input_file_root), "w")
     datafile.write("# bin middle {}; number of bonds in bin\n".format(length_units))
     for i in range(len(bin_list)-1):
-        datafile.write("{0: <.{2}f} {1: >5d}\n".format(bin_list[i]+half_bin_width, bin_occupations[i], num_decimals))
+        datafile.write("{0: <.{2}f} {1: >.5f}\n".format(bin_list[i]+half_bin_width, bin_occupations[i], num_decimals))
     datafile.close()
 
     # write plotting commands
     plotfile.write("set boxwidth {}\n".format(bin_width))
     plotfile.write("set style fill solid\n")
     plotfile.write("set xlabel 'Bond length {}'\n".format(length_units))
-    plotfile.write("set xrange [0:{}]\n".format(bin_list[-1]))
+    plotfile.write("set ylabel 'Number per atom'\n")
+    plotfile.write("set xrange [0:]\n")
     plotfile.write("set mxtics 2\n")
     plotfile.write("set yrange [0:]\n")
     plotfile.write("plot 'pdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth mcsplines lw 2 lc rgb '#000080' notitle".format(input_file_root))
@@ -226,7 +233,7 @@ elif task == "rdf":
     datafile = open("rdf{}.dat".format(input_file_root), "w")
     datafile.write("# shell middle r [{}]; g(r)\n".format(structure.length_units))
     for i in range(len(shell_list)-1):
-        datafile.write("{0: <.{2}f} {1: >5d}\n".format(shell_list[i]+half_shell_width, normalised_shell_occupations[i], num_decimals))
+        datafile.write("{0: <.{2}f} {1: >.5f}\n".format(shell_list[i]+half_shell_width, normalised_shell_occupations[i], num_decimals))
     datafile.close()
 
     # write plotting commands
@@ -234,7 +241,7 @@ elif task == "rdf":
     plotfile.write("set style fill solid\n")
     plotfile.write("set xlabel 'r [{}]'\n".format(structure.length_units))
     plotfile.write("set ylabel 'g(r)'\n")
-    plotfile.write("set xrange [0:{}]\n".format(max_radius))
+    plotfile.write("set xrange [0:]\n")
     plotfile.write("set mxtics 2\n")
     plotfile.write("set yrange [0:]\n")
     plotfile.write("plot 'rdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth mcsplines lw 2 lc rgb '#000080' notitle".format(input_file_root))
@@ -261,7 +268,7 @@ elif task == "bond_length" or task == "bond_population":
 
     for file in analysis_files:
         if input_file_type == "castep":
-            bonds, pressure = get_bonds_from_castep(file)
+            bonds, pressure, num_atoms = get_bonds_from_castep(file)
             pressure_units = "GPa"
             length_units = " [A]"
 
@@ -357,7 +364,7 @@ elif task == "bond_length" or task == "bond_population":
 elif task == "bonds":
 
     if input_file_type == "castep":
-        bonds = get_bonds_from_castep(input_file)
+        bonds, pressure, num_atoms = get_bonds_from_castep(input_file)
         length_units = "Angstrom"
     else:
         structure = Structure(input_file)
