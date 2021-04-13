@@ -67,22 +67,25 @@ if task == "rdf" or task == "pdf" or task == "bonds":
     # different input files are possible
     input_file = input("What is the name of the input file? (currently supported: .castep, .cell files) ")
     input_file_type = input_file.split(".")[-1]
+    input_file_root = "_" + ".".join(input_file.split(".")[:-1])
 elif task == "bond_length":
     input_file_type = input("What is the type of input file? (currently supported: castep, cell) ").lower()
+    input_file_root = ""
 elif task == "bond_population":
     # only possile from a .castep file
     input_file_type = "castep"
+    input_file_root = ""
 else:
     # a non-implemented task has been requested
     raise InputError("task",
-    "You have requested a task which is not implemented. Task must be one of the following: PDF, RDF, bond_length, bond_population.")
+    "You have requested a task which is not implemented. Task must be one of the following: PDF, RDF, bond_length, bond_population, bonds.")
 
 if task != "bonds":
     # write Gnuplot file
     # these bits will be common to all tasks (except bonds), whereas others depend on the task and are written in the corresponding if-block
-    plotfile = open("{}.gnu".format(task), "w")
+    plotfile = open("{}{}.gnu".format(task, input_file_root), "w")
     plotfile.write("set terminal postscript eps colour\n")
-    plotfile.write("set output '| epstopdf --filter --outfile={}.pdf'\n".format(task))
+    plotfile.write("set output '| epstopdf --filter --outfile={}{}.pdf'\n".format(task, input_file_root))
 
 if task == "pdf":
 
@@ -131,7 +134,7 @@ if task == "pdf":
                 break
 
     # write output data
-    datafile = open("pdf.dat", "w")
+    datafile = open("pdf{}.dat".format(input_file_root), "w")
     datafile.write("# bin middle [{}]; number of bonds in bin\n".format(length_units))
     for i in range(len(bin_list)-1):
         datafile.write("{} {}\n".format(bin_list[i]+half_bin_width, bin_dict[str(bin_list[i])]))
@@ -140,7 +143,7 @@ if task == "pdf":
     # write plotting commands
     plotfile.write("set boxwidth {}\n".format(bin_width))
     plotfile.write("set xlabel 'Bond length [{}]'\n".format(length_units))
-    plotfile.write("plot pdf.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle")
+    plotfile.write("plot pdf{}.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
 
 elif task == "rdf":
 
@@ -213,7 +216,7 @@ elif task == "rdf":
     normalised_shell_occupations = (structure.volume/structure.num_atoms)*average_shell_occupations/shell_volumes
 
     # write output data
-    datafile = open("rdf.dat", "w")
+    datafile = open("rdf{}.dat".format(input_file_root), "w")
     datafile.write("# shell middle r [{}]; g(r)\n".format(structure.length_units))
     for i in range(len(shell_list)-1):
         datafile.write("{} {}\n".format(shell_list[i]+half_shell_width, normalised_shell_occupations[i]))
@@ -223,7 +226,7 @@ elif task == "rdf":
     plotfile.write("set boxwidth {}\n".format(shell_width))
     plotfile.write("set xlabel 'r [{}]'\n".format(structure.length_units))
     plotfile.write("set ylabel 'g(r)'\n")
-    plotfile.write("plot rdf.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle")
+    plotfile.write("plot rdf{}.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
 
 elif task == "bond_length" or task == "bond_population":
 
@@ -351,7 +354,7 @@ elif task == "bonds":
         bonds = structure.bonds
         length_units = structure.length_units
 
-    outfile = open("bonds.dat", "w")
+    outfile = open("bonds{}.dat".format(input_file_root), "w")
 
     first_line_str = "# Bond; Length [{}]; ".format(length_units)
 
@@ -366,14 +369,14 @@ elif task == "bonds":
 
     for i in range(len(bonds)):
 
-        write_str = "{} {} ".format(bonds[i][0], bonds[i][1])
+        write_str = "{:<15} {:<5f} ".format(bonds[i][0], bonds[i][1])
 
         if input_file_type == "castep":
             # write out bond population as well
-            write_str += "{} {}\n".format(bonds[i][2], i+1)
+            write_str += "{:<2f} {:10}\n".format(bonds[i][2], i+1)
         else:
             # only write out bond number
-            write_str += "{}\n".format(i+1)
+            write_str += "{:10}\n".format(i+1)
 
         outfile.write(write_str)
 
