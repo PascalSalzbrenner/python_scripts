@@ -92,6 +92,7 @@ if task == "pdf":
     # read the width of the bins in which the PDF data will be grouped
     bin_width = float(input("What bin width (length units should be those of your input file) would you like to use for the PDF? "))
     half_bin_width = bin_width/2
+    num_decimals = len(str(half_bin_width)) - 2
 
     if input_file_type=="castep":
         bonds, pressure = get_bonds_from_castep(input_file)
@@ -137,7 +138,7 @@ if task == "pdf":
     datafile = open("pdf{}.dat".format(input_file_root), "w")
     datafile.write("# bin middle {}; number of bonds in bin\n".format(length_units))
     for i in range(len(bin_list)-1):
-        datafile.write("{} {}\n".format(bin_list[i]+half_bin_width, bin_dict[str(bin_list[i])]))
+        datafile.write("{0: <.{2}f} {1: >5d}\n".format(bin_list[i]+half_bin_width, bin_dict[str(bin_list[i])], num_decimals))
     datafile.close()
 
     # write plotting commands
@@ -155,6 +156,7 @@ elif task == "rdf":
     shell_width = float(input("How wide (length units should be those of your input file) should the shell used to evaluate the RDF be? "))
     max_radius = float(input("What is the maximum radius (length units of the input file) at which to evalue the RDF? "))
     half_shell_width = shell_width/2
+    num_decimals = len(str(half_shell_width)) - 2
 
     structure = Structure(input_file)
 
@@ -223,7 +225,7 @@ elif task == "rdf":
     datafile = open("rdf{}.dat".format(input_file_root), "w")
     datafile.write("# shell middle r [{}]; g(r)\n".format(structure.length_units))
     for i in range(len(shell_list)-1):
-        datafile.write("{} {}\n".format(shell_list[i]+half_shell_width, normalised_shell_occupations[i]))
+        datafile.write("{0: <.{2}f} {1: >5d}\n".format(shell_list[i]+half_shell_width, normalised_shell_occupations[i], num_decimals))
     datafile.close()
 
     # write plotting commands
