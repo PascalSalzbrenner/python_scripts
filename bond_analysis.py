@@ -142,8 +142,12 @@ if task == "pdf":
 
     # write plotting commands
     plotfile.write("set boxwidth {}\n".format(bin_width))
+    plotfile.write("set style fill solid\n")
     plotfile.write("set xlabel 'Bond length {}'\n".format(length_units))
-    plotfile.write("plot 'pdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
+    plotfile.write("set xrange [0:{}]\n".format(bin_list[-1]))
+    plotfile.write("set mxtics 2\n")
+    plotfile.write("set yrange [0:]\n")
+    plotfile.write("plot 'pdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth mcsplines lw 2 lc rgb '#000080' notitle".format(input_file_root))
 
 elif task == "rdf":
 
@@ -224,9 +228,13 @@ elif task == "rdf":
 
     # write plotting commands
     plotfile.write("set boxwidth {}\n".format(shell_width))
+    plotfile.write("set style fill solid\n")
     plotfile.write("set xlabel 'r [{}]'\n".format(structure.length_units))
     plotfile.write("set ylabel 'g(r)'\n")
-    plotfile.write("plot 'rdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
+    plotfile.write("set xrange [0:{}]\n".format(max_radius))
+    plotfile.write("set mxtics 2\n")
+    plotfile.write("set yrange [0:]\n")
+    plotfile.write("plot 'rdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth mcsplines lw 2 lc rgb '#000080' notitle".format(input_file_root))
 
 elif task == "bond_length" or task == "bond_population":
 
