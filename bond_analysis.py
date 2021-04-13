@@ -7,7 +7,7 @@
 #      if a structure is given, essentially repeats the analysis of the .castep file
 #      that is, PDF analysis is confined to unit cell
 # RDF: proper RDF analysis - constructs 9x9x9 supercell from the structure (which can be read from the .castep or structure file)
-#      and calculates proper RDF as defined on slide 11.10 of the atomistic modelling lecture notes
+#      and calculates proper RDF as defined on slide 11.10 of the atomistic modelling lecture notes (note that file is actually Lecture 10)
 #      by iterating over all atoms in the central cell and averaging their individual distribution functions
 #      (see equation 8 in https://scripts.iucr.org/cgi-bin/paper?S0021889800019993)
 # bond length analysis: Takes the indices (bonds ranked by length from shortest to longest) of an arbitrary number of bonds and tracks their
@@ -133,7 +133,7 @@ if task == "pdf":
     datafile = open("pdf.dat", "w")
     datafile.write("# bin middle {}; number of bonds in bin\n")
     for i in range(len(bin_list)-1):
-        datafile.write("{} {}\n".format(bin_list[i], bin_dict[str(bin_list[i])]))
+        datafile.write("{} {}\n".format(bin_list[i]+half_bin_width, bin_dict[str(bin_list[i])]))
     datafile.close()
 
     plotfile.write("set boxwidth {}\n".format(bin_width))
