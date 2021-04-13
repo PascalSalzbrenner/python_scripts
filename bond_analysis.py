@@ -86,7 +86,7 @@ plotfile.write("set output '| epstopdf --filter --outfile={}.pdf'\n".format(task
 if task == "pdf":
 
     # read the width of the bins in which the PDF data will be grouped
-    bin_width = float(input("What bin width [length units should be those of your input file] would you like to use for the PDF? "))
+    bin_width = float(input("What bin width (length units should be those of your input file) would you like to use for the PDF? "))
     half_bin_width = bin_width/2
 
     if input_file_type=="castep":
@@ -111,7 +111,7 @@ if task == "pdf":
     bin_dict[str(bin_value)] = 0
 
     # generate bin values
-    while bin <= max_length:
+    while bin_value <= max_length:
 
         bin_value += bin_width
 
@@ -131,20 +131,98 @@ if task == "pdf":
 
     # write output data
     datafile = open("pdf.dat", "w")
-    datafile.write("# bin middle {}; number of bonds in bin\n")
+    datafile.write("# bin middle [{}]; number of bonds in bin\n".format(length_units))
     for i in range(len(bin_list)-1):
         datafile.write("{} {}\n".format(bin_list[i]+half_bin_width, bin_dict[str(bin_list[i])]))
     datafile.close()
 
+    # write plotting commands
     plotfile.write("set boxwidth {}\n".format(bin_width))
     plotfile.write("set xlabel 'Bond length [{}]'\n".format(length_units))
     plotfile.write("plot pdf.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle")
 
 elif task == "rdf":
 
+    # read the width of the radial shell
+    shell_width = float(input("How wide (length units should be those of your input file) should the shell used to evaluate the RDF be? "))
+    max_radius = float(input("What is the maximum radius (length units of the input file) at which to evalue the RDF? "))
+    half_shell_width = shell_width/2
+
     structure = Structure(input_file)
 
-    # construct supercell from the structure, loop over atoms in original cell
+    # construct supercell from the structure
+    supercell_positions = []
+
+    for i in range(-1,2):
+        for j in range(-1,2):
+            for k in range(-1,2):
+                for position in structure.positions_abs:
+                    supercell_positions.append(position+i*structure.lattice[0]+j*structure.lattice[1]+k*structure.lattice[2])
+
+    # set up a list of the different shells as well as a list of shell volumes
+    # the volume of a shell is 4*pi*shell_width*r**2, where r is taken to be the distance of the shell's centre from the origin
+    shell_radius = 0
+    shell_list = []
+    shell_volumes = []
+    # set up a list where each row will contain the shell occupations for one atom
+    shell_occupations =  []
+
+    # first bin value
+    shell_list.append(shell_radius)
+    shell_volumes.append(4*np.pi*shell_width*(shell_radius+half_shell_width)**2)
+
+    # generate bin values
+    while shell_radius <= max_radius:
+
+        shell_radius += shell_width
+
+        shell_list.append(shell_radius)
+        shell_volumes.append(4*np.pi*shell_width*(shell_radius+half_shell_width)**2)
+
+    # the final value in shell_list will be the upper bound of the final bin (no radius larger than it will be included by definition)
+
+    shell_volumes = np.array(shell_volumes)
+
+    # loop over atoms in original cell and determine their distribution functions
+    for position in structure.positions_abs:
+        # set up array to contain the bin occupancies
+        atom_shell_occupations = np.zeros(len(shell_list))
+
+        # loop over every atom in the supercell - exclude the atom itself
+        for supercell_position in supercell_positions:
+            distance = np.linalg.abs(supercell_position - position)
+
+            if np.isclose(distance, 0, atol=shell_width/10000):
+                # if shell_width is reasonably chosen, no actual atom should be this close to the reference atom
+                # thus this distance is 0 and represents the distance between the atom and itself
+                continue
+
+            for i in range(len(shell_list)-1):
+                if distance >= shell_list[i] and distnce < shell_list[i+1]:
+                    atom_shell_occupations[i] += 1
+                    break
+
+        shell_occupations.append(atom_shell_occupations.copy())
+
+    shell_occupations = np.array(shell_occupations)
+    # average along the columns to get the elements for each equivalent shell over all arrays
+    average_shell_occupations = np.mean(shell_occupations, axis=0)
+    # normalise by the shell volumes and the density (= N/V, hence multiply by V/N)
+    # note that as the supercell is 27 replicas of the primitive cell, the density is of course the same
+    normalised_shell_occupations = (structure.volume/structure.num_atoms)*average_shell_occupations/shell_volumes
+
+    # write output data
+    datafile = open("rdf.dat", "w")
+    datafile.write("# shell middle r [{}]; g(r)\n".format(structure.length_units))
+    for i in range(len(shell_list)-1):
+        datafile.write("{} {}\n".format(shell_list[i]+half_shell_width, normalised_shell_occupations[i]))
+    datafile.close()
+
+    # write plotting commands
+    plotfile.write("set boxwidth {}\n".format(shell_width))
+    plotfile.write("set xlabel 'r [{}]'\n".format(structure.length_units))
+    plotfile.write("set ylabel 'g(r)'\n")
+    plotfile.write("plot rdf.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle")
 
 elif task == "bond_length" or task == "bond_population":
 
