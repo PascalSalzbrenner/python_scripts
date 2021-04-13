@@ -77,11 +77,12 @@ else:
     raise InputError("task",
     "You have requested a task which is not implemented. Task must be one of the following: PDF, RDF, bond_length, bond_population.")
 
-# write Gnuplot file
-plotfile = open("{}.gnu".format(task), "w")
-plotfile.write("set terminal postscript eps colour\n")
-plotfile.write("set output '| epstopdf --filter --outfile={}.pdf'\n".format(task))
-# these parts will be common to all tasks, whereas others depend on the task and are written in the corresponding if-block
+if task != "bonds":
+    # write Gnuplot file
+    # these bits will be common to all tasks (except bonds), whereas others depend on the task and are written in the corresponding if-block
+    plotfile = open("{}.gnu".format(task), "w")
+    plotfile.write("set terminal postscript eps colour\n")
+    plotfile.write("set output '| epstopdf --filter --outfile={}.pdf'\n".format(task))
 
 if task == "pdf":
 
@@ -370,9 +371,13 @@ elif task == "bonds":
         if input_file_type == "castep":
             # write out bond population as well
             write_str += "{} {}\n".format(bonds[i][2], i+1)
+        else:
+            # only write out bond number
+            write_str += "{}\n".format(i+1)
 
         outfile.write(write_str)
 
     outfile.close()
 
-plotfile.close()
+if task != "bonds":
+    plotfile.close()
