@@ -20,6 +20,7 @@
 # written by Pascal Salzbrenner, pts28
 
 import os
+import numpy as np
 from operator import itemgetter
 from structure import Structure
 from exceptions import InputError
@@ -106,14 +107,12 @@ if task == "pdf":
     # determine the length of the longest bond in the system
     max_length = bonds[-1][1]
 
-    # set up a list and dictionary for the different bins
+    # set up a list for the lower bounds of the different bins
     bin_value = 0
     bin_list = []
-    bin_dict = {}
 
     # first bin value
     bin_list.append(bin_value)
-    bin_dict[str(bin_value)] = 0
 
     # generate bin values
     while bin_value <= max_length:
@@ -121,9 +120,11 @@ if task == "pdf":
         bin_value += bin_width
 
         bin_list.append(bin_value)
-        bin_dict[str(bin_value)] = 0
 
-    # the final value in bin_list/bin_dict will be the upper bound of the final bin (no length can be larger than it by definition)
+    # set up an array to contain the occupations of the different bins
+    bin_occupations = np.zeros(len(bin_list), dtype=int)
+
+    # the final value in bin_list will be the upper bound of the final bin (no length can be larger than it by definition)
 
     # sort bond lengths into bins
     for bond in bonds:
@@ -131,14 +132,14 @@ if task == "pdf":
 
         for i in range(len(bin_list)-1):
             if bond_length >= bin_list[i] and bond_length < bin_list[i+1]:
-                bin_dict[str(bin_list[i])] += 1
+                bin_occupations[i] += 1
                 break
 
     # write output data
     datafile = open("pdf{}.dat".format(input_file_root), "w")
     datafile.write("# bin middle {}; number of bonds in bin\n".format(length_units))
     for i in range(len(bin_list)-1):
-        datafile.write("{0: <.{2}f} {1: >5d}\n".format(bin_list[i]+half_bin_width, bin_dict[str(bin_list[i])], num_decimals))
+        datafile.write("{0: <.{2}f} {1: >5d}\n".format(bin_list[i]+half_bin_width, bin_occupations[i], num_decimals))
     datafile.close()
 
     # write plotting commands
@@ -196,7 +197,7 @@ elif task == "rdf":
     # loop over atoms in original cell and determine their distribution functions
     for position in structure.positions_abs:
         # set up array to contain the bin occupancies
-        atom_shell_occupations = np.zeros(len(shell_list))
+        atom_shell_occupations = np.zeros(len(shell_list), dtype=int)
 
         # loop over every atom in the supercell - exclude the atom itself
         for supercell_position in supercell_positions:
