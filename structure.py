@@ -277,7 +277,23 @@ class Structure:
         # iterate over every atom with a higher index (to avoid double counting) for each atom
         for i in range(len(self.atoms)):
             for j in range(i+1, len(self.atoms)):
-                difference_vector = self.positions_abs[j]-self.positions_abs[i]
+
+                # note that the "real" distance between two atoms is that which is the shortest
+                # this does not correspond necessarily to the distance within the unit cell, but might be between i and one of the periodic
+                # images of j
+                # if the difference between two points in any direction is more than half a lattice vector, there is a closer periodic image
+
+                difference_vector_frac = self.positions_frac[j]-self.positions_frac[i]
+                greater_difference = (np.abs(difference_vector_frac) > 0.5).astype(int)
+
+                if greater_difference.any():
+                    # there is a closer point in all directions where the difference is greater than 0.5
+                    # if the difference is negative, add the lattice vector (ie 1 in direct coordinates) in that direction, and vice versa
+                    difference_vector_sign = np.sign(difference_vector_frac)
+                    difference_vector_frac = difference_vector_frac + (-1)*difference_vector_sign*greater_difference
+
+                difference_vector = lattice_basis_to_cartesian(difference_vector_frac, self.lattice)
+
                 self.bonds.append(("{}{} - {}{}".format(self.atoms[i], self.atom_numbers[i], self.atoms[j],
                 self.atom_numbers[j]), np.sqrt(difference_vector.dot(difference_vector))))
 
