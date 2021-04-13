@@ -387,11 +387,11 @@ elif task == "bonds":
 
     for i in range(len(bonds)):
 
-        write_str = "{:<15} {:<5f} ".format(bonds[i][0], bonds[i][1])
+        write_str = "{:<15} {:<10.5f} ".format(bonds[i][0], bonds[i][1])
 
         if input_file_type == "castep":
             # write out bond population as well
-            write_str += "{:<2f} {:10}\n".format(bonds[i][2], i+1)
+            write_str += "{:< 10.2f} {:>5}\n".format(bonds[i][2], i+1)
         else:
             # only write out bond number
             write_str += "{:10}\n".format(i+1)
