@@ -156,7 +156,7 @@ if task == "pdf":
     plotfile.write("set xrange [0:]\n")
     plotfile.write("set mxtics 2\n")
     plotfile.write("set yrange [0:]\n")
-    plotfile.write("plot 'pdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth mcsplines lw 2 lc rgb '#000080' notitle".format(input_file_root))
+    plotfile.write("plot 'pdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle".format(input_file_root))
 
 elif task == "rdf":
 
