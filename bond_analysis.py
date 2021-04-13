@@ -135,15 +135,15 @@ if task == "pdf":
 
     # write output data
     datafile = open("pdf{}.dat".format(input_file_root), "w")
-    datafile.write("# bin middle [{}]; number of bonds in bin\n".format(length_units))
+    datafile.write("# bin middle {}; number of bonds in bin\n".format(length_units))
     for i in range(len(bin_list)-1):
         datafile.write("{} {}\n".format(bin_list[i]+half_bin_width, bin_dict[str(bin_list[i])]))
     datafile.close()
 
     # write plotting commands
     plotfile.write("set boxwidth {}\n".format(bin_width))
-    plotfile.write("set xlabel 'Bond length [{}]'\n".format(length_units))
-    plotfile.write("plot pdf{}.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
+    plotfile.write("set xlabel 'Bond length {}'\n".format(length_units))
+    plotfile.write("plot 'pdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
 
 elif task == "rdf":
 
@@ -226,7 +226,7 @@ elif task == "rdf":
     plotfile.write("set boxwidth {}\n".format(shell_width))
     plotfile.write("set xlabel 'r [{}]'\n".format(structure.length_units))
     plotfile.write("set ylabel 'g(r)'\n")
-    plotfile.write("plot rdf{}.dat u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
+    plotfile.write("plot 'rdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle, '' u 1:2 smooth csplines lc rgb '#D95F02' notitle".format(input_file_root))
 
 elif task == "bond_length" or task == "bond_population":
 
@@ -339,7 +339,7 @@ elif task == "bond_length" or task == "bond_population":
     plot_string = "plot"
 
     for i in range(len(indices)):
-        plot_string.append(" {0}.dat u 1:{1} w points pt 7 ps 1.5 title 'Bond(s) {2}', {0}.dat u 1:{1} smooth mcsplines notitle".format(task, i+2, indices[i]))
+        plot_string.append(" '{0}.dat' u 1:{1} w points pt 7 ps 1.5 title 'Bond(s) {2}', '{0}.dat' u 1:{1} smooth mcsplines notitle".format(task, i+2, indices[i]))
 
     plotfile.write(plot_string)
 
