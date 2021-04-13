@@ -33,6 +33,7 @@ class Structure:
             "You have passed a structure for which no parsers is implemented. Currently supported: .castep, .cell files")
 
         self.num_atoms = len(self.atoms)
+        self.volume = np.linalg.det(np.dstack(self.lattice))[0]
 
     def __str__(self):
         """This is what will be printed when str(Structure) is called"""
