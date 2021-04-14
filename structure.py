@@ -281,21 +281,32 @@ class Structure:
                 # note that the "real" distance between two atoms is that which is the shortest
                 # this does not correspond necessarily to the distance within the unit cell, but might be between i and one of the periodic
                 # images of j
-                # if the difference between two points in any direction is more than half a lattice vector, there is a closer periodic image
+                # trivial implementation (slow, but stable): iterate over all possible (sensible) periodic images of atom j
 
-                difference_vector_frac = self.positions_frac[j]-self.positions_frac[i]
-                greater_difference = (np.abs(difference_vector_frac) > 0.5).astype(int)
+                min_vector = self.positions_abs[j]-self.positions_abs[i]
+                min_vector_len = np.sqrt(min_vector.dot(min_vector))
 
-                if greater_difference.any():
-                    # there is a closer point in all directions where the difference is greater than 0.5
-                    # if the difference is negative, add the lattice vector (ie 1 in direct coordinates) in that direction, and vice versa
-                    difference_vector_sign = np.sign(difference_vector_frac)
-                    difference_vector_frac = difference_vector_frac + (-1)*difference_vector_sign*greater_difference
+                # determine in which directions it is sensible to check - those where point i is closer to the next unit cell
+                additional_variables = []
+                for coordinate in self.positions_frac[i]:
+                    if coordinate <= 0.5:
+                        additional_variables.append(-1)
+                    else:
+                        additional_variables.append(1)
 
-                difference_vector = lattice_basis_to_cartesian(difference_vector_frac, self.lattice)
+                for l in [0, additional_variables[0]]:
+                    for m in [0, additional_variables[1]]:
+                        for n in [0, additional_variables[2]]:
+                            cell_shift = np.array([l, m, n])
+                            difference_vector = min_vector + np.dot(self.lattice.T, cell_shift)
+                            difference_vector_len = np.sqrt(difference_vector.dot(difference_vector))
+
+                            if difference_vector_len < min_vector_len:
+                                # we have found a shorter image
+                                min_vector_len = difference_vector_len
 
                 self.bonds.append(("{}{} - {}{}".format(self.atoms[i], self.atom_numbers[i], self.atoms[j],
-                self.atom_numbers[j]), np.sqrt(difference_vector.dot(difference_vector))))
+                self.atom_numbers[j]), min_vector_len))
 
         # sort by bond length
         self.bonds.sort(key=itemgetter(1))
