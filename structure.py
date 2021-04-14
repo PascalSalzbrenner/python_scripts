@@ -15,7 +15,7 @@ class Structure:
 
     def __init__(self, filename):
         self.pressure = 0
-        self.filename = filename
+        self.filename = filename.strip()
         self.filetype = filename.split(".")[-1]
         self.length_units = "Angstrom"
         self.pressure_units = "GPa"

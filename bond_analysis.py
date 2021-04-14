@@ -65,15 +65,15 @@ def get_bonds_from_castep(filename):
     return bonds, pressure, num_atoms
 
 # get necessary input
-task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population, bonds - see the code header for descriptions) ").lower()
+task = input("Which task would you like to run? (PDF, RDF, bond_length, bond_population, bonds - see the code header for descriptions) ").lower().strip()
 
 if task == "rdf" or task == "pdf" or task == "bonds":
     # different input files are possible
-    input_file = input("What is the name of the input file? (currently supported: .castep, .cell files) ")
+    input_file = input("What is the name of the input file? (currently supported: .castep, .cell files) ").strip()
     input_file_type = input_file.split(".")[-1]
     input_file_root = "_" + ".".join(input_file.split(".")[:-1])
 elif task == "bond_length":
-    input_file_type = input("What is the type of input file? (currently supported: castep, cell) ").lower()
+    input_file_type = input("What is the type of input file? (currently supported: castep, cell) ").lower().strip()
     input_file_root = ""
 elif task == "bond_population":
     # only possile from a .castep file
