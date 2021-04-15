@@ -257,8 +257,6 @@ elif task == "bond_length" or task == "bond_population":
         if input_file_type in item:
             analysis_files.append(item)
 
-    analysis_files.sort()
-
     # determine which element of the data we need to read (1 for length, 2 for population)
     if task == "bond_length":
         data_index = 1
@@ -283,7 +281,7 @@ elif task == "bond_length" or task == "bond_population":
             length_units = structure.length_units
 
         # initialise string for the line
-        write_str = "{}".format(pressure)
+        write_str = "{: <10d}".format(int(pressure))
 
         # iterate over indices
         for index in indices:
@@ -299,10 +297,10 @@ elif task == "bond_length" or task == "bond_population":
                 for i in range(start_index-1, end_index):
                     average += bonds[i][data_index]
 
-                write_str += " {}".format(average/num_points)
+                write_str += " {: <10.5f}".format(average/num_points)
             else:
                 # only a single point
-                write_str += " {}".format(bonds[index-1][data_index])
+                write_str += " {: <10.5f}".format(bonds[index-1][data_index])
 
         data_list.append(write_str)
 
@@ -315,9 +313,16 @@ elif task == "bond_length" or task == "bond_population":
     # sort data in ascending order of pressure
     data_list.sort()
 
+    # format the task string so as to use it for the output
+    task_strings = task.split("_")
+    task_string_nice = "{} {}".format(task_strings[0].capitalize(), task_strings[1].capitalize())
+
     # write data
     datafile = open("{}.dat".format(task), "w")
-    datafile.write("# Pressure [{}]; {}{}\n".format(pressure_units, task, y_units))
+    title_str = "# Pressure [{}];".format(pressure_units)
+    for index in indices:
+        title_str += " {} of bond(s) {}{};".format(task_strings[-1], index, y_units)
+    datafile.write("{}\n".format(title_str.rstrip(";")))
     datafile.write("\n".join(data_list))
     datafile.close()
 
@@ -354,9 +359,6 @@ elif task == "bond_length" or task == "bond_population":
 
     plotfile.write("set xlabel 'Pressure [{}]'\n".format(pressure_units))
 
-    # format the task string so as to use it for the y-axis label
-    task_strings = task.split("_")
-    task_string_nice = "{} {}".format(task_strings[0].capitalize(), task_strings[1].capitalize())
     plotfile.write("set ylabel '{}{}'\n".format(task_string_nice, y_units))
 
     # compile string for plotting the data
