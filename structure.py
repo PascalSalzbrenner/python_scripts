@@ -315,5 +315,5 @@ class Structure:
         # .castep file) containing the bond length as the value
         self.bonds_dict = {}
 
-        for bond in bonds:
+        for bond in self.bonds:
             self.bonds_dict[bond[0]] = (bond[1])
