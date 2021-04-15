@@ -350,7 +350,7 @@ elif task == "bond_length" or task == "bond_population":
     plotfile.write("set linetype 22 lc rgb '#20C2C2'\n")
     plotfile.write("set linetype cycle 22\n")
 
-    plotfile.write("set xlabel '{} [{}]'\n".format(pressure, pressure_units))
+    plotfile.write("set xlabel 'Pressure [{}]'\n".formatpressure_units))
 
     # format the task string so as to use it for the y-axis label
     task_strings = task.split("_")
@@ -361,9 +361,9 @@ elif task == "bond_length" or task == "bond_population":
     plot_string = "plot"
 
     for i in range(len(indices)):
-        plot_string += " '{0}.dat' u 1:{1} w points pt 7 ps 1.5 title 'Bond(s) {2}', '{0}.dat' u 1:{1} smooth mcsplines notitle".format(task, i+2, indices[i])
+        plot_string += " '{0}.dat' u 1:{1} w points pt 7 ps 1.5 title 'Bond(s) {2}', '{0}.dat' u 1:{1} smooth mcsplines notitle,".format(task, i+2, indices[i])
 
-    plotfile.write(plot_string)
+    plotfile.write(plot_string.rstrip(","))
 
 elif task == "bonds":
 
