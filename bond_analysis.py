@@ -249,7 +249,7 @@ elif task == "rdf":
 
 elif task == "bond_length" or task == "bond_population":
 
-    indices = input("What bonds (indexed from the shortest=1, or named by <initial_atom><initial_atom_number>-<final_atom><final_atom_number>) do you want to take into account?\nPass a whitespace-separated list of an arbitrary number of bonds.\n If using indices, a-b will lead to an average of all bonds in the range [a,b]. ").split()
+    indices = input("What bonds (indexed from the shortest=1, or named by <initial_atom><initial_atom_number>-<final_atom><final_atom_number>) do you want to take into account?\nPass a whitespace-separated list of an arbitrary number of bonds.\nIf using indices, a-b will lead to an average of all bonds in the range [a,b]. ").split()
 
     # check if the bonds are named or indexed
     if re.match(r"^[a-zA-Z]", indices[0]):
@@ -289,7 +289,7 @@ elif task == "bond_length" or task == "bond_population":
                 # set up dictionary of bonds for easy access of named bonds
                 bonds_dict = {}
                 for bond in bonds:
-                    self.bonds_dict[bond[0]] = (bond[1], bond[2])
+                    bonds_dict[bond[0]] = (bond[1], bond[2])
         else:
             structure = Structure(file)
             structure.get_bonds()
