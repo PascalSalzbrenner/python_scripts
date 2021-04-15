@@ -91,6 +91,8 @@ if task != "bonds":
     plotfile = open("{}{}.gnu".format(task, input_file_root), "w")
     plotfile.write("set terminal postscript eps colour\n")
     plotfile.write("set output '| epstopdf --filter --outfile={}{}.pdf'\n".format(task, input_file_root))
+    plotfile.write("set mxtics 2\n")
+    plotfile.write("set mytics 2\n")
 
 if task == "pdf":
 
@@ -155,7 +157,6 @@ if task == "pdf":
     plotfile.write("set xlabel 'Bond length {}'\n".format(length_units))
     plotfile.write("set ylabel 'Number per atom'\n")
     plotfile.write("set xrange [0:]\n")
-    plotfile.write("set mxtics 2\n")
     plotfile.write("set yrange [0:]\n")
     plotfile.write("plot 'pdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle".format(input_file_root))
 
@@ -244,7 +245,6 @@ elif task == "rdf":
     plotfile.write("set xlabel 'r [{}]'\n".format(structure.length_units))
     plotfile.write("set ylabel 'g(r)'\n")
     plotfile.write("set xrange [0:{}]\n".format(max_radius))
-    plotfile.write("set mxtics 2\n")
     plotfile.write("set yrange [0:]\n")
     plotfile.write("plot 'rdf{}.dat' u 1:2 w boxes lc rgb '#DC143C' notitle".format(input_file_root))
 
