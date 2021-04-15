@@ -257,6 +257,11 @@ elif task == "bond_length" or task == "bond_population":
         if input_file_type in item:
             analysis_files.append(item)
 
+    if not analysis_files:
+        # not matching files found
+        raise InputError("Finding input files for {}".format(task),
+        "You specified {} as the input file type for {}, but no files if this type were found.".format(format(input_file_type, task)))
+
     # determine which element of the data we need to read (1 for length, 2 for population)
     if task == "bond_length":
         data_index = 1
@@ -335,7 +340,7 @@ elif task == "bond_length" or task == "bond_population":
     plotfile.write("set linetype 2 lc rgb '#3633F5'\n")
     plotfile.write("set linetype 3 lc rgb '#FF0000'\n") # classic red - used for longer molecular bonds in VESTA
     plotfile.write("set linetype 4 lc rgb '#FF0000'\n")
-    plotfile.write("set linetype 5 lc rgb '#16B0FF'\n") # same light blue as used for molecular bonds in VESTA
+    plotfile.write("set linetype 5 lc rgb '#16B0FF'\n") # same light blue as used for intermolecular bonds in VESTA
     plotfile.write("set linetype 6 lc rgb '#16B0FF'\n")
     plotfile.write("set linetype 7 lc rgb '#D95F02'\n") # orange
     plotfile.write("set linetype 8 lc rgb '#D95F02'\n")
