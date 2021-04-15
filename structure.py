@@ -310,3 +310,10 @@ class Structure:
 
         # sort by bond length
         self.bonds.sort(key=itemgetter(1))
+
+        # create dictionary containing bond names as keys and a length 1 tuple (for consistent access with the bonds read directly from the
+        # .castep file) containing the bond length as the value
+        self.bonds_dict = {}
+
+        for bond in bonds:
+            self.bonds_dict[bond[0]] = (bond[1])
