@@ -176,7 +176,7 @@ elif task == "rdf":
         for j in range(-1,2):
             for k in range(-1,2):
                 for position in structure.positions_abs:
-                    supercell_positions.append(position+i*structure.lattice[0]+j*structure.lattice[1]+k*structure.lattice[2])
+                    supercell_positions.append(position+np.dot(structure.lattice.T, np.array([i, j, k])))
 
     # set up a list of the different shells as well as a list of shell volumes
     # the volume of a shell is 4*pi*shell_width*r**2, where r is taken to be the distance of the shell's centre from the origin
