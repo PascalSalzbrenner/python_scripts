@@ -218,7 +218,7 @@ elif task == "rdf":
                 continue
 
             for i in range(len(shell_list)-1):
-                if distance >= shell_list[i] and distnce < shell_list[i+1]:
+                if distance >= shell_list[i] and distance < shell_list[i+1]:
                     atom_shell_occupations[i] += 1
                     break
 
