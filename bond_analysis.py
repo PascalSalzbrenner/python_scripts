@@ -361,7 +361,7 @@ elif task == "bond_length" or task == "bond_population":
     plot_string = "plot"
 
     for i in range(len(indices)):
-        plot_string += " '{0}.dat' u 1:{1} w points pt 7 ps 1.5 title 'Bond(s) {2}', '{0}.dat' u 1:{1} smooth mcsplines notitle,".format(task, i+2, indices[i])
+        plot_string += " '{0}.dat' u 1:{1} w points pt 7 ps 1.5 title 'Bond(s) {2}', '{0}.dat' u 1:{1} smooth bezier lw 2.5 notitle,".format(task, i+2, indices[i])
 
     plotfile.write(plot_string.rstrip(","))
 
