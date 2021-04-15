@@ -304,6 +304,8 @@ elif task == "bond_length" or task == "bond_population":
                 # only a single point
                 write_str += " {}".format(bonds[index-1][data_index])
 
+        data_list.append(write_str)
+
     # determine the y-units depending on the task
     if task == "bond_length":
         y_units = " [{}]".format(length_units)
