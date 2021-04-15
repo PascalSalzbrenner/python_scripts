@@ -352,7 +352,7 @@ elif task == "bond_length" or task == "bond_population":
     plotfile.write("set linetype 24 lc rgb '#20C2C2'\n")
     plotfile.write("set linetype cycle 24\n")
 
-    plotfile.write("set xlabel 'Pressure [{}]'\n".formatpressure_units))
+    plotfile.write("set xlabel 'Pressure [{}]'\n".format(pressure_units))
 
     # format the task string so as to use it for the y-axis label
     task_strings = task.split("_")
