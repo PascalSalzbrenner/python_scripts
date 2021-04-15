@@ -270,7 +270,7 @@ elif task == "bond_length" or task == "bond_population":
         if input_file_type == "castep":
             bonds, pressure, num_atoms = get_bonds_from_castep(file)
             pressure_units = "GPa"
-            length_units = " [A]"
+            length_units = " A"
 
         else:
             structure = Structure(file)
@@ -304,7 +304,7 @@ elif task == "bond_length" or task == "bond_population":
 
     # determine the y-units depending on the task
     if task == "bond_length":
-        y_units = " [{}]".format()
+        y_units = " [{}]".format(length_units)
     else:
         y_units = ""
 
