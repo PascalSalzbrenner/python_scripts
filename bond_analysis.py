@@ -254,8 +254,10 @@ elif task == "bond_length" or task == "bond_population":
     # determine all those files
     analysis_files = []
     for item in os.listdir():
-        if "input_file_type" in item:
+        if input_file_type in item:
             analysis_files.append(item)
+
+    analysis_files.sort()
 
     # determine which element of the data we need to read (1 for length, 2 for population)
     if task == "bond_length":
