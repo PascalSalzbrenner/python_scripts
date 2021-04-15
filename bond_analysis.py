@@ -20,6 +20,7 @@
 # written by Pascal Salzbrenner, pts28
 
 import os
+import re
 import numpy as np
 from operator import itemgetter
 from structure import Structure
@@ -248,7 +249,14 @@ elif task == "rdf":
 
 elif task == "bond_length" or task == "bond_population":
 
-    indices = input("What bonds (indexed from the shortest=1) do you want to take into account?\nPass a whitespace-separated list of an arbitrary number of bonds.\na-b will lead to an average of all bonds in the range [a,b]. ").split()
+    indices = input("What bonds (indexed from the shortest=1, or named by <initial_atom><initial_atom_number>-<final_atom><final_atom_number>) do you want to take into account?\nPass a whitespace-separated list of an arbitrary number of bonds.\n If using indices, a-b will lead to an average of all bonds in the range [a,b]. ").split()
+
+    # check if the bonds are named or indexed
+    if re.match(r"^[a-zA-Z]", indices[0]):
+        # the first element of the string is a letter, hence we are dealing with a named bond
+        named_bonds = True
+    else:
+        named_bonds = False
 
     # for these two tasks, loop over all files of the right type in the directory
     # determine all those files
