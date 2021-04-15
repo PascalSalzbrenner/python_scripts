@@ -209,7 +209,8 @@ elif task == "rdf":
 
         # loop over every atom in the supercell - exclude the atom itself
         for supercell_position in supercell_positions:
-            distance = np.linalg.abs(supercell_position - position)
+            distance_vector = supercell_position - position
+            distance = np.sqrt(distance_vector.dot(distance_vector))
 
             if np.isclose(distance, 0, atol=shell_width/10000):
                 # if shell_width is reasonably chosen, no actual atom should be this close to the reference atom
