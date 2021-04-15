@@ -285,10 +285,16 @@ elif task == "bond_length" or task == "bond_population":
             pressure_units = "GPa"
             length_units = "A"
 
+            if named_bonds:
+                # set up dictionary of bonds for easy access of named bonds
+                bonds_dict = {}
+                for bond in bonds:
+                    self.bonds_dict[bond[0]] = (bond[1], bond[2])
         else:
             structure = Structure(file)
             structure.get_bonds()
             bonds = structure.bonds
+            bonds_dict = structure.bonds_dict
             pressure = structure.pressure
             pressure_units = structure.pressure_units
             length_units = structure.length_units
@@ -299,21 +305,29 @@ elif task == "bond_length" or task == "bond_population":
         # iterate over indices
         for index in indices:
 
-            # check if we are averaging over a number of bonds
-            if "-" in index:
-                start_end_indices = index.split("-")
-                start_index = int(start_end_indices[0])
-                end_index = int(start_end_indices[1])
-                num_points = end_index - start_index + 1
-                average = 0
-
-                for i in range(start_index-1, end_index):
-                    average += bonds[i][data_index]
-
-                write_str += " {: <10.5f}".format(average/num_points)
+            if named_bonds:
+                # bonds are given by names
+                split_name = index.split("-")
+                write_str += " {: <10.5f}".format(bonds_dict["{} - {}".format(split_name[0], split_name[1])][data_index-1])
+                # note about the previous line that the input bond names are not whitespace separated, but those in the dict are
+                # also, the tuple misses the first element (the bond name), which is the library key
             else:
-                # only a single point
-                write_str += " {: <10.5f}".format(bonds[index-1][data_index])
+                # bonds are given by indices
+                # check if we are averaging over a number of bonds
+                if "-" in index:
+                    start_end_indices = index.split("-")
+                    start_index = int(start_end_indices[0])
+                    end_index = int(start_end_indices[1])
+                    num_points = end_index - start_index + 1
+                    average = 0
+
+                    for i in range(start_index-1, end_index):
+                        average += bonds[i][data_index]
+
+                    write_str += " {: <10.5f}".format(average/num_points)
+                else:
+                    # only a single point
+                    write_str += " {: <10.5f}".format(bonds[index-1][data_index])
 
         data_list.append(write_str)
 
