@@ -326,29 +326,31 @@ elif task == "bond_length" or task == "bond_population":
     plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")
 
     # redefine gnuplot linetypes with nice colours
-    plotfile.write("set linetype 1 lc rgb '#DC143C'\n")
-    plotfile.write("set linetype 2 lc rgb '#DC143C'\n")
-    plotfile.write("set linetype 3 lc rgb '#D95F02'\n")
-    plotfile.write("set linetype 4 lc rgb '#D95F02'\n")
-    plotfile.write("set linetype 5 lc rgb '#E6AB02'\n")
-    plotfile.write("set linetype 6 lc rgb '#E6AB02'\n")
-    plotfile.write("set linetype 7 lc rgb '#66A61E'\n")
-    plotfile.write("set linetype 8 lc rgb '#66A61E'\n")
-    plotfile.write("set linetype 9 lc rgb '#8000C4'\n")
-    plotfile.write("set linetype 10 lc rgb '#8000C4'\n")
-    plotfile.write("set linetype 11 lc rgb '#7570B3'\n")
-    plotfile.write("set linetype 12 lc rgb '#7570B3'\n")
-    plotfile.write("set linetype 13 lc rgb '#E7298A'\n")
-    plotfile.write("set linetype 14 lc rgb '#E7298A'\n")
-    plotfile.write("set linetype 15 lc rgb '#1E90FF'\n")
-    plotfile.write("set linetype 16 lc rgb '#1E90FF'\n")
-    plotfile.write("set linetype 17 lc rgb '#1B9E77'\n")
-    plotfile.write("set linetype 18 lc rgb '#1B9E77'\n")
-    plotfile.write("set linetype 19 lc rgb '#B8860B'\n")
-    plotfile.write("set linetype 20 lc rgb '#B8860B'\n")
-    plotfile.write("set linetype 21 lc rgb '#20C2C2'\n")
-    plotfile.write("set linetype 22 lc rgb '#20C2C2'\n")
-    plotfile.write("set linetype cycle 22\n")
+    plotfile.write("set linetype 1 lc rgb '#3633F5'\n") # same dark blue as used for molecular bonds in VESTA
+    plotfile.write("set linetype 2 lc rgb '#3633F5'\n")
+    plotfile.write("set linetype 3 lc rgb '#FF0000'\n") # classic red - used for longer molecular bonds in VESTA
+    plotfile.write("set linetype 4 lc rgb '#FF0000'\n")
+    plotfile.write("set linetype 5 lc rgb '#16B0FF'\n") # same light blue as used for molecular bonds in VESTA
+    plotfile.write("set linetype 6 lc rgb '#16B0FF'\n")
+    plotfile.write("set linetype 7 lc rgb '#D95F02'\n") # orange
+    plotfile.write("set linetype 8 lc rgb '#D95F02'\n")
+    plotfile.write("set linetype 9 lc rgb '#E6AB02'\n") # yellow
+    plotfile.write("set linetype 10 lc rgb '#E6AB02'\n")
+    plotfile.write("set linetype 11 lc rgb '#66A61E'\n") # dark green
+    plotfile.write("set linetype 12 lc rgb '#66A61E'\n")
+    plotfile.write("set linetype 13 lc rgb '#8000C4'\n") # purple
+    plotfile.write("set linetype 14 lc rgb '#8000C4'\n")
+    plotfile.write("set linetype 15 lc rgb '#7570B3'\n") # silver-ish medium blue
+    plotfile.write("set linetype 16 lc rgb '#7570B3'\n")
+    plotfile.write("set linetype 17 lc rgb '#E7298A'\n") # pink
+    plotfile.write("set linetype 18 lc rgb '#E7298A'\n")
+    plotfile.write("set linetype 19 lc rgb '#1B9E77'\n") # medium green
+    plotfile.write("set linetype 20 lc rgb '#1B9E77'\n")
+    plotfile.write("set linetype 21 lc rgb '#B8860B'\n") # gold
+    plotfile.write("set linetype 22 lc rgb '#B8860B'\n")
+    plotfile.write("set linetype 23 lc rgb '#20C2C2'\n") # turqouise
+    plotfile.write("set linetype 24 lc rgb '#20C2C2'\n")
+    plotfile.write("set linetype cycle 24\n")
 
     plotfile.write("set xlabel 'Pressure [{}]'\n".formatpressure_units))
 
