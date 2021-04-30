@@ -14,19 +14,26 @@ class Structure:
     """Class to contain all the data about a structure one might find useful"""
 
     def __init__(self, filename):
-        self.pressure = 0
         self.filename = filename.strip()
         self.filetype = filename.split(".")[-1]
         self.length_units = "Angstrom"
+        self.pressure = 0
         self.pressure_units = "GPa"
         self.atoms = [] # contains the element names in the same sequence as the positions are in their list
         self.atom_numbers = [] # follows the numbering convention of CASTEP (all elements numbered from 1 to N_element)
                                # but is implemented for all structures
 
+        # structure parsers must set the following attributes: self.lattice, self.positions_abs, self.positions_frac, self.atoms,
+        # self.atom_numbers
+        # additionally, they can alter some of the properties set above
+
         if self.filetype == "castep":
             self.get_structure_from_castep()
         elif self.filetype == "cell":
             self.get_structure_from_cell()
+        elif self.filename == "structure.dat":
+            # Caesar structure format
+            self.get_structure_from_caesar_structure()
         else:
             # filetype that is not (currently) implemented
             raise InputError("Reading structure",
@@ -262,6 +269,60 @@ class Structure:
         self.positions_abs = []
         for atom in self.positions_frac:
             self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
+
+    def get_structure_from_caesar_structure(self):
+        """Function to read the required structure information from a Caesar structure.dat file"""
+
+        self.length_units = "Bohr" # Caesar uses atomic units
+
+        structure_file = open("{}".format(self.filename), "r")
+
+        # the structure.dat format is very simple - the first line contains "lattice", and the next three lines contain a lattice vector each
+        lattice_vectors = []
+
+        structure_file.readline()
+
+        for line in structure_file:
+            if "atoms" in line.lower():
+                # end of the lattice block
+                break
+            else:
+                lattice_vectors.append(np.array(line.split()[:3]))
+
+        self.lattice = np.array(lattice_vectors, dtype=float)
+
+        # read the atomic names (converted into atomic numbers) and positions
+        self.positions_abs = [] # this is how they are always given in structure.dat
+
+        for line in structure_file:
+
+            # initialise container to count the numbers of the different atoms
+            atoms_numbers = {}
+
+            if "symmetry" in line.lower():
+                # end of the atoms block
+                break
+            else
+                atom_data = line.split()
+
+                self.atoms.append(atom_data[0])
+                self.positions_abs.append(np.array(split_line[2:5]), dtype=float)
+
+                # determine correct atom number
+                if atom_data[0] not in atoms_numbers.keys():
+                    # first atom of this type
+                    atoms_numbers[atom_data[0]] = 1
+                else:
+                    atoms_numbers[atom_data[0]] += 1
+
+                self.atom_numbers.append(atoms_numbers[atom_data[0]])
+
+        structure_file.close()
+
+        # fill in positions_frac
+        self.positions_frac = []
+        for atom in self.positions_abs:
+            self.positions_frac.append(cartesian_to_lattice_basis(atom, self.lattice))
 
     def get_bonds(self):
         """Function to do a bond length analysis of the parsed structure
