@@ -8,6 +8,7 @@
 
 supercell_1 = input("What is the name of the directory containing the first calculation? ").rstrip("/")
 supercell_2 = input("What is the name of the directory containing the second calculation? ").rstrip("/")
+num_atoms = int(input("What is the number of atoms in the primitive cell? "))
 
 first_energies = open("{}/lte/interpolated_free_energy.dat".format(supercell_1), "r")
 second_energies = open("{}/lte/interpolated_free_energy.dat".format(supercell_2), "r")
@@ -15,11 +16,11 @@ second_energies = open("{}/lte/interpolated_free_energy.dat".format(supercell_2)
 comparison_file = open("{}_{}_interpolated_free_energy_difference.dat".format(supercell_1, supercell_2), "w")
 
 comparison_file.write("# difference in free energies calculated in {} and {}\n".format(supercell_1, supercell_2))
-comparison_file.write("# T [K]; |energy difference| [meV]\n")
+comparison_file.write("# T [K]; |energy difference| [meV/atom]\n")
 
 for first_line in first_energies:
     second_line = second_energies.readline()
-    comparison_file.write("{} {}\n".format(first_line.split()[0], abs((float(second_line.split()[2])*1000-float(first_line.split()[2])*1000))))
+    comparison_file.write("{} {}\n".format(first_line.split()[0], abs((float(second_line.split()[2])*1000-float(first_line.split()[2])*1000))/num_atoms))
 
 first_energies.close()
 second_energies.close()
