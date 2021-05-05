@@ -10,6 +10,7 @@ import os
 import sys
 
 T_max = int(sys.argv[1])
+num_atoms = int(sys.argv[2])
 
 plotfile = open("thermal_energy_convergence.gnu", "w")
 
@@ -49,8 +50,8 @@ for dir in sorted(ls):
         else:
             supercell_size_directions = [supercell_size[1][0], supercell_size[1][1], supercell_size[1][2]]
 
-        plot_string += " '{}/lte/interpolated_free_energy.dat' u 1:($3*1000) w points pt 7 ps 1.2 title '{}x{}x{} Supercell',".format(dir,
-        supercell_size_directions[0], supercell_size_directions[1], supercell_size_directions[2])
+        plot_string += " '{}/lte/interpolated_free_energy.dat' u 1:($3*1000/{}) w points pt 7 ps 1.2 title '{}x{}x{} Supercell',".format(dir,
+        num_atoms, supercell_size_directions[0], supercell_size_directions[1], supercell_size_directions[2])
 
 plot_string = plot_string.rstrip(",")
 
