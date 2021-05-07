@@ -60,7 +60,7 @@ if index == 3:
 # add writing of gnuplot file to plot fit
 with open("{}_temperature.gnu".format(quantity), "w") as plotfile:
 
-    plotfile.write("set terminal postscript eps colour\n")
+    plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
     plotfile.write("set style data points\n")
     plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")
     plotfile.write("set output '| epstopdf --filter --outfile={}_temperature.pdf'\n".format(quantity))

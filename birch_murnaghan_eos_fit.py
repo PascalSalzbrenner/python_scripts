@@ -63,7 +63,7 @@ with open("birch_murnaghan_eos_parameters.txt", "w") as outfile:
 # add writing of gnuplot file to plot fit
 with open("energy_volume.gnu", "w") as plotfile:
 
-    plotfile.write("set terminal postscript eps colour\n")
+    plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
     plotfile.write("set style data points\n")
     plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")
     plotfile.write("set output '| epstopdf --filter --outfile=energy_volume.pdf'\n")

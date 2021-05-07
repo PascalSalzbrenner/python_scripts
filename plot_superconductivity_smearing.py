@@ -30,7 +30,7 @@ else:
 
 plotfile = open("{}_degauss_mu_{}.gnu".format(quantity, mu), "w") # gnuplot file
 
-plotfile.write("set terminal postscript eps enhanced colour\n")
+plotfile.write("set terminal postscript eps enhanced colour font 'Helvetica,20'\n")
 plotfile.write("set style data linespoints\n")
 plotfile.write("set output '| epstopdf --filter --outfile={}_degauss_mu_{}.pdf'\n".format(quantity, mu))
 
@@ -56,7 +56,7 @@ plotfile.write("set ylabel '{} [{}]'\n".format(quantity, units))
 plotfile.write("set mxtics 2\n")
 plotfile.write("set mytics 2\n")
 
-plot_string = "plot" # there is one plot command at the end, so we generate the string and write it to energy_volume.gnu at the end
+plot_string = "plot" # there is one plot command at the end, so we generate the string and write it to the gnuplot file at the end
 
 for directory in sys.argv[1:]:
 

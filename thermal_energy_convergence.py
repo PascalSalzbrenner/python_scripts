@@ -14,7 +14,7 @@ num_atoms = int(sys.argv[2])
 
 plotfile = open("thermal_energy_convergence.gnu", "w")
 
-plotfile.write("set terminal postscript eps colour\n")
+plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
 plotfile.write("set style data points\n")
 plotfile.write("set key top left\n")
 plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")

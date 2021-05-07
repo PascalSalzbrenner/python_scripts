@@ -121,7 +121,7 @@ plotfile = open("energy_volume_temperature.gnu", "w") # gnuplot file to plot fit
 
 minfile.write("#T [K], a [A], V_0 [A^3], E_0 [{}]\n".format(units))
 
-plotfile.write("set terminal postscript eps colour\n")
+plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
 plotfile.write("set style data points\n")
 plotfile.write("set output '| epstopdf --filter --outfile=energy_volume_temperature.pdf'\n")
 

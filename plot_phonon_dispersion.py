@@ -90,7 +90,7 @@ for hsp in high_symmetry_points:
 high_symmetry_names.close()
 high_symmetry_points.close()
 
-plotfile.write("set terminal postscript eps colour\n")
+plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
 plotfile.write("set style data points\n")
 plotfile.write("set output '| epstopdf --filter --outfile=phonon_dispersion.pdf'\n")
 plotfile.write("set mytics 2\n")

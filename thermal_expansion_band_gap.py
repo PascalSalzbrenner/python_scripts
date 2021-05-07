@@ -8,11 +8,11 @@
 # band_gap_change_temperature.gnu, to plot the change in the band gap compared to the static result as a function of temperature
 
 # create lists of lines for band gap gnuplot files
-bg_plot_lines = ["set terminal postscript eps colour", "set style data points",
+bg_plot_lines = ["set terminal postscript eps colour font 'Helvetica,20'", "set style data points",
 "set output '| epstopdf --filter --outfile=band_gap_temperature.pdf'", "set xlabel 'T [K]'", "set ylabel 'E_{G} [eV]'",
 "plot 'band_gap_temperature.dat' u 1:2 w points pt 7 ps 1.2 lc rgb '#DC143C' notitle"]
 
-bg_change_plot_lines = ["set terminal postscript eps colour", "set style data points",
+bg_change_plot_lines = ["set terminal postscript eps colour font 'Helvetica,20'", "set style data points",
 "set output '| epstopdf --filter --outfile=band_gap_change_temperature.pdf'", "set xlabel 'T [K]'", "set ylabel '{/Symbol D}E_{G} [meV]'",
 "plot 'band_gap_temperature.dat' u 1:3 w points pt 7 ps 1.2 lc rgb '#DC143C' notitle"]
 
