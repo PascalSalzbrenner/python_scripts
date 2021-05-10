@@ -18,7 +18,7 @@ parent_path = "/".join('$path'.rstrip("/").split("/")[:-1])
 res_filename = "{}_{}p0-{}.res".format(seed, pressure, filename_rest)
 
 # read the ZPE - first line of the file - the second column is in Hartree, the third in eV
-with open("lte/interpolated_free_energy.dat", "w") as zpe_file:
+with open("lte/interpolated_free_energy.dat", "r") as zpe_file:
         zpe = float(zpe_file.readline().split()[2])
 
 # open input and output files
