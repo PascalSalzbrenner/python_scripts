@@ -22,8 +22,8 @@ with open("lte/interpolated_free_energy.dat", "r") as zpe_file:
         zpe = float(zpe_file.readline().split()[2])
 
 # open input and output files
-infile = open("{}/{}".format(path, filename), "r")
-outfile = open("{}/enthalpy_plot_ZPE/{}".format(parent_path, filename), "w")
+infile = open("{}/{}".format(path, res_filename), "r")
+outfile = open("{}/enthalpy_plot_ZPE/{}".format(parent_path, res_filename), "w")
 
 # first line of the input res file is the only one requiring special handling
 # the total enthalpy (enthalpy per cell) is the 5th element of the first line
