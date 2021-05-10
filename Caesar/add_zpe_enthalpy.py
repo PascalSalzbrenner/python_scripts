@@ -34,7 +34,7 @@ outfile = open("{}/enthalpy_plot_ZPE/{}".format(parent_path, res_filename), "w")
 # In order to get the right energy correction per cell, the Caesar ZPE is multiplied by n_atoms_static / n_atoms_phonon
 # n_atoms_static is the 8th element of the .res file's first line
 
-res_data = infile.readline.split()
+res_data = infile.readline().split()
 static_enthalpy = float(res_data[4])
 n_atoms_static = float(res_data[7])
 
