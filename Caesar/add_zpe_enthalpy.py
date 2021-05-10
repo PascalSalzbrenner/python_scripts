@@ -6,16 +6,10 @@ import sys
 
 # parse input
 path = sys.argv[1].rstrip("/") # the path to the directory containing the original .res file
-# the .res file naming convention is <seed>_<pressure>p0-<filename_rest>.res
-seed = sys.argv[2]
-filename_rest = sys.argv[3]
-pressure = sys.argv[4]
+res_filename = sys.argv[2] # name of the appropriate .res file - the same file as was used to set up the calculation
 
 # generate path to the parent directory of the .res file directory
 parent_path = "/".join(path.rstrip("/").split("/")[:-1])
-
-# generate .res filename
-res_filename = "{}_{}p0-{}.res".format(seed, pressure, filename_rest)
 
 # read the ZPE - first line of the file - the second column is in Hartree, the third in eV
 with open("lte/interpolated_free_energy.dat", "r") as zpe_file:
