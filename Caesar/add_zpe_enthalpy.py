@@ -12,7 +12,7 @@ filename_rest = sys.argv[3]
 pressure = sys.argv[4]
 
 # generate path to the parent directory of the .res file directory
-parent_path = "/".join('$path'.rstrip("/").split("/")[:-1])
+parent_path = "/".join(path.rstrip("/").split("/")[:-1])
 
 # generate .res filename
 res_filename = "{}_{}p0-{}.res".format(seed, pressure, filename_rest)
