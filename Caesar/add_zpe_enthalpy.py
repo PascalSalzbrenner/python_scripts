@@ -44,7 +44,7 @@ for line in structure_file:
 
         for atoms_line in structure_file:
 
-            if line.lower().startswith("symmetry"):
+            if atoms_line.lower().startswith("symmetry"):
                 # the last line containing an atom has been passed
                 break
             else:
