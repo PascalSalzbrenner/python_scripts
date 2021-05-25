@@ -302,7 +302,7 @@ class Structure:
             if "symmetry" in line.lower():
                 # end of the atoms block
                 break
-            else
+            else:
                 atom_data = line.split()
 
                 self.atoms.append(atom_data[0])
