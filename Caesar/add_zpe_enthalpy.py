@@ -56,7 +56,7 @@ structure_file.close()
 
 atoms_factor = n_atoms_static / n_atoms_phonon
 
-res_data[4] = str(static_enthalpy + zpe)
+res_data[4] = str(static_enthalpy + zpe*atoms_factor)
 
 outfile.write(" ".join(res_data))
 outfile.write("\n")
