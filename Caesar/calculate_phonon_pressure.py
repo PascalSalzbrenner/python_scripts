@@ -119,6 +119,9 @@ for structure, structure_files in files_dict.items():
         # the first line is the only one that must be changed
         first_line = read_file.readline().split()
 
+        # the second element contains the pressure
+        first_line[1] = pressure_pattern.sub("_{}p0".format(int(correct_pressure)), first_line[1])
+
         # third element is the pressure
         first_line[2] = str(correct_pressure)
 
