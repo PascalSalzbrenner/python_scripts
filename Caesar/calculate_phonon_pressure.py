@@ -9,10 +9,13 @@
 
 import os
 import re
+import sys
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.polynomial import Polynomial
+
+############################################################# input and setup #############################################################
 
 # define pressure conversion factor from eV/A**3 to GPa
 pressure_conversion = 160.21766208
@@ -27,6 +30,9 @@ pressure_pattern = re.compile(r"_\d*p0")
 shutil.rmtree("../enthalpy_plot_ZPE_correct_pressure", ignore_errors=True)
 os.mkdir("../enthalpy_plot_ZPE_correct_pressure")
 
+# read the reference structure - this must agree with the structure_name
+reference_structure = sys.argv[1]
+
 # we will consider all AIRSS .res files in the directory, grouped by the different indices associated with the different structures
 # we determine these indices here
 
@@ -37,6 +43,8 @@ files_dict = {}
 volumes = {}
 energies = {}
 static_pressures = {}
+
+################################################### reading pressure-volume-energy data ###################################################
 
 # determine all files in the directory
 ls = os.listdir()
@@ -76,6 +84,8 @@ for structure, structure_files in files_dict.items():
     volumes[structure] = np.array(volumes[structure])
     energies[structure] = np.array(energies[structure])
 
+########################################### fitting the polynomial and finding the real pressure ###########################################
+
     # polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
     # a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
     fit, additional_info = Polynomial.fit(volumes[structure], energies[structure], rank, full=True)
@@ -96,6 +106,8 @@ for structure, structure_files in files_dict.items():
         pressures.append(-pressure_conversion*first_derivative(volume))
 
     pressures.sort()
+
+####################################### writing generated data for plotting and other postprocessing #######################################
 
     # open file to write the old and new pressures to
     pressure_file = open("../enthalpy_plot_ZPE_correct_pressure/static_phonon_pressure_{}.dat".format(structure), "w")
@@ -136,3 +148,12 @@ for structure, structure_files in files_dict.items():
         write_file.close()
 
     pressure_file.close()
+
+# TODO implement plotting in Gnuplot
+# important features:
+# data files for each structure - pressure in column 1, energy per atom in column 2
+# calculate the pressure on a dense enough spacing - perhaps 0.01 GPa (but can play around with)
+# I can use a polynomial fit for this
+# the points are not as smoothly distributed as at the static lattice, so this will erase some information, but I feel like it's still the best option
+# use the same range (the range of the reference structure, which will become an input) for all structures to enable subtraction
+# if there are structures with a narrower pressure range, all values not in its range will be set to 0 - when the
