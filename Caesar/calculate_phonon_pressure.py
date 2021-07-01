@@ -8,9 +8,7 @@
 # implemented to work with my add_zpe_enthalpy.py script, but could probably be extended (somewhat) easily
 
 import os
-import re
 import sys
-import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.polynomial import Polynomial
@@ -23,12 +21,8 @@ pressure_conversion = 160.21766208
 # hardcode polynomial rank, but can be easily changed here
 rank = 5
 
-# compile a regex pattern to correctly recognise the pressure in a .res filename
-pressure_pattern = re.compile(r"_\d*p0")
-
-# delete and set up fresh enthalpy_plot_ZPE_correct_pressure
-shutil.rmtree("../enthalpy_plot_ZPE_correct_pressure", ignore_errors=True)
-os.mkdir("../enthalpy_plot_ZPE_correct_pressure")
+# hardcode step size for writing out the pressure-volume data, can again be changed easily here
+pressure_increment = 0.01
 
 # read the reference structure - this must agree with the structure_name
 reference_structure = sys.argv[1]
@@ -62,55 +56,143 @@ for file in ls:
             files_dict[structure_name].append(file)
 
 # iterate over and read all files for each structure
+# reference structure is handled separately
+
+volumes[reference_structure] = []
+energies[reference_structure] = []
+static_pressures[reference_structure] = []
+
+for file in files_dict[reference_structure]:
+
+    data_file = open(file, "r")
+
+    # this is the AIRSS .res file format
+    # the pressure [GPa], volume [Ang**3], and energy [eV] are the third, fourth, and fifth elements of the first line respectively
+    important_line = data_file.readline().split()
+    static_pressures[reference_structure].append(float(important_line[2]))
+    volumes[reference_structure].append(float(important_line[3]))
+    # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
+    energies[reference_structure].append(float(important_line[4])-
+                                        (static_pressures[reference_structure][-1]/pressure_conversion)*volumes[reference_structure][-1])
+
+    # we also require the number of atoms in the unit cell
+    # this will be the same for every file, so it is not a problem that it's read every time
+    reference_structure_natoms = int(important_line[7])
+
+    data_file.close()
+
+volumes[reference_structure] = np.array(volumes[reference_structure])
+energies[reference_structure] = np.array(reference_energies[structure])
+
+# polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
+# a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
+fit, additional_info = Polynomial.fit(volumes[reference_structure], energies[reference_structure], rank, full=True)
+fit_volumes, fit_energies = fit.linspace(500)
+plt.plot(volumes[reference_structure], energies[reference_structure], 'o', fit_volumes, fit_energies, '-')
+plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(reference_structure))
+plt.close()
+
+residual_sum = additional_info[0][0]
+
+# find the first derivative - the pressure
+first_derivative = fit.deriv(m=1)
+
+# find the pressure at all the explicit volume points
+reference_pressures = []
+
+for volume in volumes[reference_structure]:
+    reference_pressures.append(-pressure_conversion*first_derivative(volume))
+
+reference_pressures.sort()
+
+# polynomial fit to the pressure-energy data
+reference_pressure_energy_fit = Polynomial.fit(reference_pressures, energies[reference_structure], rank)
+
 for structure, structure_files in files_dict.items():
 
-    volumes[structure] = []
-    energies[structure] = []
-    static_pressures[structure] = []
+    # the data for the reference structure has already been read and processed
+    # only carry out these operations if we are dealing with another structure
+    if structure != reference_structure:
 
-    for file in structure_files:
+        volumes[structure] = []
+        energies[structure] = []
+        static_pressures[structure] = []
 
-        data_file = open(file, "r")
+        for file in structure_files:
 
-        # this is the AIRSS .res file format, so the pressure [GPa], volume [Ang**3], and energy [eV] are the third, fourth, and fifth elements of the first line respectively
-        important_line = data_file.readline().split()
-        static_pressures[structure].append(float(important_line[2]))
-        volumes[structure].append(float(important_line[3]))
-        # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
-        energies[structure].append(float(important_line[4])-(static_pressures[structure][-1]/pressure_conversion)*volumes[structure][-1])
+            data_file = open(file, "r")
 
-        data_file.close()
+            # this is the AIRSS .res file format
+            # the pressure [GPa], volume [Ang**3], and energy [eV] are the third, fourth, and fifth elements of the first line respectively
+            important_line = data_file.readline().split()
+            static_pressures[structure].append(float(important_line[2]))
+            volumes[structure].append(float(important_line[3]))
+            # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
+            energies[structure].append(float(important_line[4])-(static_pressures[structure][-1]/pressure_conversion)*volumes[structure][-1])
 
-    volumes[structure] = np.array(volumes[structure])
-    energies[structure] = np.array(energies[structure])
+            natoms = int(important_line[7])
+
+            data_file.close()
+
+        volumes[structure] = np.array(volumes[structure])
+        energies[structure] = np.array(energies[structure])
 
 ########################################### fitting the polynomial and finding the real pressure ###########################################
 
-    # polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
-    # a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
-    fit, additional_info = Polynomial.fit(volumes[structure], energies[structure], rank, full=True)
-    fit_volumes, fit_energies = fit.linspace(500)
-    plt.plot(volumes[structure], energies[structure], 'o', fit_volumes, fit_energies, '-')
-    plt.savefig("../enthalpy_plot_ZPE_correct_pressure/energy_volume_polynomial_fit_{}.pdf".format(structure))
-    plt.close()
+        # polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
+        # a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
+        fit, additional_info = Polynomial.fit(volumes[structure], energies[structure], rank, full=True)
+        fit_volumes, fit_energies = fit.linspace(500)
+        plt.plot(volumes[structure], energies[structure], 'o', fit_volumes, fit_energies, '-')
+        plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(structure))
+        plt.close()
 
-    residual_sum = additional_info[0][0]
+        residual_sum = additional_info[0][0]
 
-    # find the first derivative - the pressure
-    first_derivative = fit.deriv(m=1)
+        # find the first derivative - the pressure
+        first_derivative = fit.deriv(m=1)
 
-    # find the pressure at all the explicit volume points
-    pressures = []
+        # find the pressure at all the explicit volume points
+        pressures = []
 
-    for volume in volumes[structure]:
-        pressures.append(-pressure_conversion*first_derivative(volume))
+        for volume in volumes[structure]:
+            pressures.append(-pressure_conversion*first_derivative(volume))
 
-    pressures.sort()
+        pressures.sort()
 
-####################################### writing generated data for plotting and other postprocessing #######################################
+        # polynomial fit to the pressure-energy data here
+        pressure_energy_fit = Polynomial.fit(pressures, energies[reference_structure], rank)
+
+########################################## write out pressure-volume data for subsequent plotting ##########################################
+
+        # determine starting pressure - the higher of the lowest pressure for the reference structure and that of the current one
+        if pressures[0] >= reference_pressures[0]:
+            initial_pressure = pressures[0]
+        else:
+            initial_pressure = reference_pressures[0]
+
+        # determine starting pressure - the lower of the highest pressure for the reference structure and that of the current one
+        if pressures[-1] <= reference_pressures[-1]:
+            final_pressure = pressures[-1]
+        else:
+            final_pressure = reference_pressures[-1]
+
+        pressure_energy_file = open("phonon_pressure_energy_{}.dat".format(structure), "w")
+
+        pressure_energy_file.write("# Pressure [GPa]; Gibbs Free Energy [meV/atom], relative to the Gibbs Free Energy of {}\n".format(reference_structure))
+
+        while initial_pressure < final_pressure:
+            pressure_energy_file.write("{} {}\n".format(initial_pressure,
+            ((pressure_energy_fit(initial_pressure)/natoms)-(reference_pressure_energy_fit(initial_pressure)/reference_structure_natoms))))
+
+            initial_pressure += pressure_increment
+
+        pressure_energy_file.close()
+
+######################################### write out the static and corresponding phonon pressures #########################################
 
     # open file to write the old and new pressures to
-    pressure_file = open("../enthalpy_plot_ZPE_correct_pressure/static_phonon_pressure_{}.dat".format(structure), "w")
+    pressure_file = open("static_phonon_pressure_{}.dat".format(structure), "w")
     pressure_file.write("# rank of polynomial: {}\n".format(rank))
     pressure_file.write("# sum of energy-volume fit residuals: {}\n\n".format(residual_sum))
     pressure_file.write("# static-lattice pressure [GPa]; vibration-corrected pressure [GPa]\n")
@@ -124,36 +206,48 @@ for structure, structure_files in files_dict.items():
 
         pressure_file.write("{} {}\n".format(static_pressures[structure][i], correct_pressure))
 
-        read_file = open("{}".format(relevant_file), "r")
-        write_file = open("../enthalpy_plot_ZPE_correct_pressure/{}".format(pressure_pattern.sub("_{}p0".format(int(correct_pressure)),
-                                                                                                                relevant_file)), "w")
-
-        # the first line is the only one that must be changed
-        first_line = read_file.readline().split()
-
-        # the second element contains the pressure
-        first_line[1] = pressure_pattern.sub("_{}p0".format(int(correct_pressure)), first_line[1])
-
-        # third element is the pressure
-        first_line[2] = str(correct_pressure)
-
-        write_file.write(" ".join(first_line))
-        write_file.write("\n")
-
-        # rest of the lines are copied over as they are
-        for line in read_file:
-            write_file.write(line)
-
-        read_file.close()
-        write_file.close()
-
     pressure_file.close()
 
-# TODO implement plotting in Gnuplot
-# important features:
-# data files for each structure - pressure in column 1, energy per atom in column 2
-# calculate the pressure on a dense enough spacing - perhaps 0.01 GPa (but can play around with)
-# I can use a polynomial fit for this
-# the points are not as smoothly distributed as at the static lattice, so this will erase some information, but I feel like it's still the best option
-# use the same range (the range of the reference structure, which will become an input) for all structures to enable subtraction
-# if there are structures with a narrower pressure range, all values not in its range will be set to 0 - when the
+######################################################### generate Gnuplot script #########################################################
+
+plotfile = open("phonon_pressure_energy.gnu", "w")
+
+plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
+plotfile.write("set style data points\n")
+plotfile.write("set output '| epstopdf --filter --outfile=phonon_pressure_energy.pdf'\n")
+
+plotfile.write("set key top right\n")
+plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque font 'Helvectica,15'\n")
+
+# redefine gnuplot linetypes with nice colours
+plotfile.write("set linetype 1 lc rgb '#DC143C'\n")
+plotfile.write("set linetype 2 lc rgb '#D95F02'\n")
+plotfile.write("set linetype 3 lc rgb '#E6AB02'\n")
+plotfile.write("set linetype 4 lc rgb '#66A61E'\n")
+plotfile.write("set linetype 5 lc rgb '#8000C4'\n")
+plotfile.write("set linetype 6 lc rgb '#7570B3'\n")
+plotfile.write("set linetype 7 lc rgb '#E7298A'\n")
+plotfile.write("set linetype 8 lc rgb '#1E90FF'\n")
+plotfile.write("set linetype 9 lc rgb '#1B9E77'\n")
+plotfile.write("set linetype 10 lc rgb '#B8860B'\n")
+plotfile.write("set linetype 11 lc rgb '#20C2C2'\n")
+plotfile.write("set linetype cycle 11\n")
+
+plotfile.write("set xlabel 'Pressure [GPa]'\n")
+plotfile.write("set ylabel 'Enthalpy [meV/atom]'\n")
+
+# pick somewhat sensible defaults for the xrange
+plotfile.write("set [{}:{}]\n".format(static_pressures[0], static_pressures[-1]+100))
+
+# generate plot command
+plot_string = "plot 0 w points pt 7 ps 1.5 title '{}'".format(reference_structure)
+
+for structure in files_dict.keys():
+
+    # skip reference structure
+    if structure != reference_structure:
+        plot_string += ", 'phonon_pressure_energy_{0}.dat' u 1:2 w points pt 7 ps 1.5 title '{0}'".format(structure)
+
+plotfile.write("{}\n".format(plot_string))
+
+plotfile.close()
