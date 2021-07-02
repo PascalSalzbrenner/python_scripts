@@ -11,8 +11,8 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import interpolate
 from numpy.polynomial import Polynomial
-from scipy.interpolate import interp1d
 
 ############################################################# input and setup #############################################################
 
@@ -87,38 +87,53 @@ for file in files_dict[reference_structure]:
 
     data_file.close()
 
+volumes[reference_structure].sort()
+energies[reference_structure].sort(reverse=True)
+
 volumes[reference_structure] = np.array(volumes[reference_structure])
 energies[reference_structure] = np.array(energies[reference_structure])
 full_energies[reference_structure] = np.array(full_energies[reference_structure])/reference_structure_natoms
 
 # polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
 # a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
-fit, additional_info = Polynomial.fit(volumes[reference_structure], energies[reference_structure], rank, full=True)
-fit_volumes, fit_energies = fit.linspace(500)
+#fit, additional_info = Polynomial.fit(volumes[reference_structure], energies[reference_structure], rank, full=True)
+#fit_volumes, fit_energies = fit.linspace(500)
+#plt.plot(volumes[reference_structure], energies[reference_structure], 'o', fit_volumes, fit_energies, '-')
+#plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(reference_structure))
+#plt.close()
+
+#residual_sum = additional_info[0][0]
+
+# find the first derivative - the pressure
+# first_derivative = fit.deriv(m=1)
+
+# find the pressure at all the explicit volume points
+# reference_pressures = []
+
+# for volume in volumes[reference_structure]:
+#    reference_pressures.append(-pressure_conversion*first_derivative(volume))
+
+splines = interpolate.splrep(volumes[reference_structure], energies[reference_structure], s=0)
+fit_volumes = np.arange(volumes[reference_structure][0], volumes[reference_structure][-1],0.001)
+fit_energies = interpolate.splev(fit_volumes, splines, der=0)
+
 plt.plot(volumes[reference_structure], energies[reference_structure], 'o', fit_volumes, fit_energies, '-')
 plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(reference_structure))
 plt.close()
 
-residual_sum = additional_info[0][0]
+reference_pressures = interpolate.splev(volumes[reference_structure], splines, der=1)
 
-# find the first derivative - the pressure
-first_derivative = fit.deriv(m=1)
-
-# find the pressure at all the explicit volume points
-reference_pressures = []
-
-for volume in volumes[reference_structure]:
-    reference_pressures.append(-pressure_conversion*first_derivative(volume))
+reference_pressures = -pressure_conversion*reference_pressures
 
 reference_pressures.sort()
 
-# cubically interpolate the pressure-energy data
-reference_pressure_energy_interpolation = interp1d(reference_pressures, full_energies[reference_structure], kind="cubic")
+# fit a rank 5 polynomial to the pressure-energy data for interpolation
+reference_pressure_energy_fit = Polynomial.fit(reference_pressures, full_energies[reference_structure], rank)
 
 pressure_fit_pressures = np.arange(reference_pressures[0],reference_pressures[-1],0.01)
-pressure_fit_energies = reference_pressure_energy_interpolation(pressure_fit_pressures)
+pressure_fit_energies = reference_pressure_energy_fit(pressure_fit_pressures)
 plt.plot(reference_pressures, full_energies[reference_structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
-plt.savefig("pressure_energy_interpolation_{}.pdf".format(reference_structure))
+plt.savefig("pressure_energy_fit_{}.pdf".format(reference_structure))
 plt.close()
 
 for structure, structure_files in files_dict.items():
@@ -149,6 +164,9 @@ for structure, structure_files in files_dict.items():
 
             data_file.close()
 
+        volumes[structure].sort()
+        energies[structure].sort(reverse=True)
+
         volumes[structure] = np.array(volumes[structure])
         energies[structure] = np.array(energies[structure])
         full_energies[structure] = np.array(full_energies[structure])/natoms
@@ -157,32 +175,44 @@ for structure, structure_files in files_dict.items():
 
         # polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
         # a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
-        fit, additional_info = Polynomial.fit(volumes[structure], energies[structure], rank, full=True)
-        fit_volumes, fit_energies = fit.linspace(500)
+#        fit, additional_info = Polynomial.fit(volumes[structure], energies[structure], rank, full=True)
+#        fit_volumes, fit_energies = fit.linspace(500)
+#        plt.plot(volumes[structure], energies[structure], 'o', fit_volumes, fit_energies, '-')
+#        plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(structure))
+#        plt.close()
+
+#        residual_sum = additional_info[0][0]
+
+        # find the first derivative - the pressure
+#        first_derivative = fit.deriv(m=1)
+
+        # find the pressure at all the explicit volume points
+#        pressures = []
+
+#        for volume in volumes[structure]:
+#            pressures.append(-pressure_conversion*first_derivative(volume))
+
+        splines = interpolate.splrep(volumes[structure], energies[structure], s=0)
+        fit_volumes = np.arange(volumes[structure][0], volumes[structure][-1],0.001)
+        fit_energies = interpolate.splev(fit_volumes, splines, der=0)
+
         plt.plot(volumes[structure], energies[structure], 'o', fit_volumes, fit_energies, '-')
         plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(structure))
         plt.close()
 
-        residual_sum = additional_info[0][0]
+        pressures = interpolate.splev(volumes[structure], splines, der=1)
 
-        # find the first derivative - the pressure
-        first_derivative = fit.deriv(m=1)
-
-        # find the pressure at all the explicit volume points
-        pressures = []
-
-        for volume in volumes[structure]:
-            pressures.append(-pressure_conversion*first_derivative(volume))
+        pressures = -pressure_conversion*pressures
 
         pressures.sort()
 
-        # cubically interpolate the pressure-energy data here
-        pressure_energy_interpolation = interp1d(pressures, full_energies[structure], kind="cubic")
+        # fit a rank 5 polynomial to the pressure-energy data for interpolation
+        pressure_energy_fit = Polynomial.fit(pressures, full_energies[structure], rank)
 
         pressure_fit_pressures = np.arange(pressures[0],pressures[-1],0.01)
-        pressure_fit_energies = pressure_energy_interpolation(pressure_fit_pressures)
+        pressure_fit_energies = pressure_energy_fit(pressure_fit_pressures)
         plt.plot(pressures, full_energies[structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
-        plt.savefig("pressure_energy_interpolation_{}.pdf".format(structure))
+        plt.savefig("pressure_energy_fit_{}.pdf".format(structure))
         plt.close()
 
 ########################################## write out pressure-volume data for subsequent plotting ##########################################
@@ -205,7 +235,7 @@ for structure, structure_files in files_dict.items():
 
         while initial_pressure < final_pressure:
             pressure_energy_file.write("{} {}\n".format(initial_pressure,
-            (1000*(pressure_energy_interpolation(initial_pressure))-1000*(reference_pressure_energy_interpolation(initial_pressure)))))
+            (1000*(pressure_energy_fit(initial_pressure))-1000*(reference_pressure_energy_fit(initial_pressure)))))
 
             initial_pressure += pressure_increment
 
@@ -220,7 +250,7 @@ for structure, structure_files in files_dict.items():
     # open file to write the old and new pressures to
     pressure_file = open("static_phonon_pressure_{}.dat".format(structure), "w")
     pressure_file.write("# rank of polynomial: {}\n".format(rank))
-    pressure_file.write("# sum of energy-volume fit residuals: {}\n\n".format(residual_sum))
+#    pressure_file.write("# sum of energy-volume fit residuals: {}\n\n".format(residual_sum))
     pressure_file.write("# static-lattice pressure [GPa]; vibration-corrected pressure [GPa]\n")
 
     # copy over the files we have operated on, with the correct pressure replacing that of the static lattice
