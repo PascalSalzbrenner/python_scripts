@@ -94,25 +94,6 @@ volumes[reference_structure] = np.array(volumes[reference_structure])
 energies[reference_structure] = np.array(energies[reference_structure])
 full_energies[reference_structure] = np.array(full_energies[reference_structure])/reference_structure_natoms
 
-# polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
-# a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
-#fit, additional_info = Polynomial.fit(volumes[reference_structure], energies[reference_structure], rank, full=True)
-#fit_volumes, fit_energies = fit.linspace(500)
-#plt.plot(volumes[reference_structure], energies[reference_structure], 'o', fit_volumes, fit_energies, '-')
-#plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(reference_structure))
-#plt.close()
-
-#residual_sum = additional_info[0][0]
-
-# find the first derivative - the pressure
-# first_derivative = fit.deriv(m=1)
-
-# find the pressure at all the explicit volume points
-# reference_pressures = []
-
-# for volume in volumes[reference_structure]:
-#    reference_pressures.append(-pressure_conversion*first_derivative(volume))
-
 splines = interpolate.splrep(volumes[reference_structure], energies[reference_structure], s=0)
 fit_volumes = np.arange(volumes[reference_structure][0], volumes[reference_structure][-1],0.001)
 fit_energies = interpolate.splev(fit_volumes, splines, der=0)
@@ -173,25 +154,7 @@ for structure, structure_files in files_dict.items():
 
 ########################################### fitting the polynomial and finding the real pressure ###########################################
 
-        # polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
-        # a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
-#        fit, additional_info = Polynomial.fit(volumes[structure], energies[structure], rank, full=True)
-#        fit_volumes, fit_energies = fit.linspace(500)
-#        plt.plot(volumes[structure], energies[structure], 'o', fit_volumes, fit_energies, '-')
-#        plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(structure))
-#        plt.close()
-
-#        residual_sum = additional_info[0][0]
-
-        # find the first derivative - the pressure
-#        first_derivative = fit.deriv(m=1)
-
-        # find the pressure at all the explicit volume points
-#        pressures = []
-
-#        for volume in volumes[structure]:
-#            pressures.append(-pressure_conversion*first_derivative(volume))
-
+        # use cubic splines with no smoothing to fit to the energy-volume data - gives better precision than polynomial interpolation
         splines = interpolate.splrep(volumes[structure], energies[structure], s=0)
         fit_volumes = np.arange(volumes[structure][0], volumes[structure][-1],0.001)
         fit_energies = interpolate.splev(fit_volumes, splines, der=0)
@@ -200,10 +163,9 @@ for structure, structure_files in files_dict.items():
         plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(structure))
         plt.close()
 
+        # calculate the first derivative of the interpolation to get the pressure
         pressures = interpolate.splev(volumes[structure], splines, der=1)
-
         pressures = -pressure_conversion*pressures
-
         pressures.sort()
 
         # fit a rank 5 polynomial to the pressure-energy data for interpolation
@@ -250,7 +212,6 @@ for structure, structure_files in files_dict.items():
     # open file to write the old and new pressures to
     pressure_file = open("static_phonon_pressure_{}.dat".format(structure), "w")
     pressure_file.write("# rank of polynomial: {}\n".format(rank))
-#    pressure_file.write("# sum of energy-volume fit residuals: {}\n\n".format(residual_sum))
     pressure_file.write("# static-lattice pressure [GPa]; vibration-corrected pressure [GPa]\n")
 
     # copy over the files we have operated on, with the correct pressure replacing that of the static lattice
