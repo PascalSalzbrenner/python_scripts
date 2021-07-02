@@ -12,6 +12,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.polynomial import Polynomial
+from scipy.interpolate import interp1d
 
 ############################################################# input and setup #############################################################
 
@@ -36,6 +37,7 @@ files_dict = {}
 # set up energy and volume dictionaries, as well as one for the static lattice pressure
 volumes = {}
 energies = {}
+full_energies = {}
 static_pressures = {}
 
 ################################################### reading pressure-volume-energy data ###################################################
@@ -56,10 +58,12 @@ for file in ls:
             files_dict[structure_name].append(file)
 
 # iterate over and read all files for each structure
+
 # reference structure is handled separately
 
 volumes[reference_structure] = []
 energies[reference_structure] = []
+full_energies[reference_structure] = []
 static_pressures[reference_structure] = []
 
 for file in files_dict[reference_structure]:
@@ -74,6 +78,8 @@ for file in files_dict[reference_structure]:
     # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
     energies[reference_structure].append(float(important_line[4])-
                                         (static_pressures[reference_structure][-1]/pressure_conversion)*volumes[reference_structure][-1])
+    # however, we need the full energy when plotting the pressure-energy curve at the end
+    full_energies[reference_structure].append(float(important_line[4]))
 
     # we also require the number of atoms in the unit cell
     # this will be the same for every file, so it is not a problem that it's read every time
@@ -82,7 +88,8 @@ for file in files_dict[reference_structure]:
     data_file.close()
 
 volumes[reference_structure] = np.array(volumes[reference_structure])
-energies[reference_structure] = np.array(reference_energies[structure])
+energies[reference_structure] = np.array(energies[reference_structure])
+full_energies[reference_structure] = np.array(full_energies[reference_structure])/reference_structure_natoms
 
 # polynomial of degree 5 seems to work fine, but the fit is plotted for visual, and the residuals calculated for quantitative confirmation
 # a more sophisticated way of doing this would be to iterate the order of the polynomial until the residuals are below some threshold
@@ -105,8 +112,14 @@ for volume in volumes[reference_structure]:
 
 reference_pressures.sort()
 
-# polynomial fit to the pressure-energy data
-reference_pressure_energy_fit = Polynomial.fit(reference_pressures, energies[reference_structure], rank)
+# cubically interpolate the pressure-energy data
+reference_pressure_energy_interpolation = interp1d(reference_pressures, full_energies[reference_structure], kind="cubic")
+
+pressure_fit_pressures = np.arange(reference_pressures[0],reference_pressures[-1],0.01)
+pressure_fit_energies = reference_pressure_energy_interpolation(pressure_fit_pressures)
+plt.plot(reference_pressures, full_energies[reference_structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
+plt.savefig("pressure_energy_interpolation_{}.pdf".format(reference_structure))
+plt.close()
 
 for structure, structure_files in files_dict.items():
 
@@ -116,6 +129,7 @@ for structure, structure_files in files_dict.items():
 
         volumes[structure] = []
         energies[structure] = []
+        full_energies[structure] = []
         static_pressures[structure] = []
 
         for file in structure_files:
@@ -129,6 +143,7 @@ for structure, structure_files in files_dict.items():
             volumes[structure].append(float(important_line[3]))
             # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
             energies[structure].append(float(important_line[4])-(static_pressures[structure][-1]/pressure_conversion)*volumes[structure][-1])
+            full_energies[structure].append(float(important_line[4]))
 
             natoms = int(important_line[7])
 
@@ -136,6 +151,7 @@ for structure, structure_files in files_dict.items():
 
         volumes[structure] = np.array(volumes[structure])
         energies[structure] = np.array(energies[structure])
+        full_energies[structure] = np.array(full_energies[structure])/natoms
 
 ########################################### fitting the polynomial and finding the real pressure ###########################################
 
@@ -160,8 +176,14 @@ for structure, structure_files in files_dict.items():
 
         pressures.sort()
 
-        # polynomial fit to the pressure-energy data here
-        pressure_energy_fit = Polynomial.fit(pressures, energies[reference_structure], rank)
+        # cubically interpolate the pressure-energy data here
+        pressure_energy_interpolation = interp1d(pressures, full_energies[structure], kind="cubic")
+
+        pressure_fit_pressures = np.arange(pressures[0],pressures[-1],0.01)
+        pressure_fit_energies = pressure_energy_interpolation(pressure_fit_pressures)
+        plt.plot(pressures, full_energies[structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
+        plt.savefig("pressure_energy_interpolation_{}.pdf".format(structure))
+        plt.close()
 
 ########################################## write out pressure-volume data for subsequent plotting ##########################################
 
@@ -183,13 +205,17 @@ for structure, structure_files in files_dict.items():
 
         while initial_pressure < final_pressure:
             pressure_energy_file.write("{} {}\n".format(initial_pressure,
-            ((pressure_energy_fit(initial_pressure)/natoms)-(reference_pressure_energy_fit(initial_pressure)/reference_structure_natoms))))
+            (1000*(pressure_energy_interpolation(initial_pressure))-1000*(reference_pressure_energy_interpolation(initial_pressure)))))
 
             initial_pressure += pressure_increment
 
         pressure_energy_file.close()
 
 ######################################### write out the static and corresponding phonon pressures #########################################
+
+    else:
+        # this is the reference structure - we need to set the pressures list here for the following part to work
+        pressures = reference_pressures[:]
 
     # open file to write the old and new pressures to
     pressure_file = open("static_phonon_pressure_{}.dat".format(structure), "w")
@@ -213,7 +239,7 @@ for structure, structure_files in files_dict.items():
 plotfile = open("phonon_pressure_energy.gnu", "w")
 
 plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
-plotfile.write("set style data points\n")
+plotfile.write("set style data lines\n")
 plotfile.write("set output '| epstopdf --filter --outfile=phonon_pressure_energy.pdf'\n")
 
 plotfile.write("set key top right\n")
@@ -236,17 +262,20 @@ plotfile.write("set linetype cycle 11\n")
 plotfile.write("set xlabel 'Pressure [GPa]'\n")
 plotfile.write("set ylabel 'Enthalpy [meV/atom]'\n")
 
-# pick somewhat sensible defaults for the xrange
-plotfile.write("set [{}:{}]\n".format(static_pressures[0], static_pressures[-1]+100))
+# pick somewhat sensible defaults for the xrange using the fact that the reference structure must span the whole range at the static level
+plotfile.write("set xrange [{}:{}]\n".format(int(static_pressures[reference_structure][0]),
+                                             int(static_pressures[reference_structure][-1])+100))
+plotfile.write("set xtics 50\n")
+plotfile.write("set mxtics 2\n")
 
 # generate plot command
-plot_string = "plot 0 w points pt 7 ps 1.5 title '{}'".format(reference_structure)
+plot_string = "plot 0 w lines lw 5 title '{}'".format(reference_structure)
 
 for structure in files_dict.keys():
 
     # skip reference structure
     if structure != reference_structure:
-        plot_string += ", 'phonon_pressure_energy_{0}.dat' u 1:2 w points pt 7 ps 1.5 title '{0}'".format(structure)
+        plot_string += ", 'phonon_pressure_energy_{0}.dat' u 1:2 w lines lw 5 title '{0}'".format(structure)
 
 plotfile.write("{}\n".format(plot_string))
 
