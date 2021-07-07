@@ -84,9 +84,18 @@ for file in files_dict[reference_structure]:
 
     data_file.close()
 
+<<<<<<< HEAD
 # flip the lists as we require the volumes to be sorted from lowest (corresponding to the highest pressure) to highest (vice versa)
 volumes[reference_structure] = np.flip(np.array(volumes[reference_structure]))
 energies[reference_structure] = np.flip(np.array(energies[reference_structure]))
+=======
+volumes[reference_structure].sort()
+energies[reference_structure].sort(reverse=True)
+
+volumes[reference_structure] = np.array(volumes[reference_structure])
+energies[reference_structure] = np.array(energies[reference_structure])
+full_energies[reference_structure] = np.array(full_energies[reference_structure])/reference_structure_natoms
+>>>>>>> 969152831f813bae0e3d1ab66e017e0637fb9041
 
 splines = interpolate.splrep(volumes[reference_structure], energies[reference_structure], s=0)
 fit_volumes = np.arange(volumes[reference_structure][0], volumes[reference_structure][-1],0.001)
@@ -159,6 +168,7 @@ for structure, structure_files in files_dict.items():
 
         # calculate the first derivative of the interpolation to get the pressure
         pressures = interpolate.splev(volumes[structure], splines, der=1)
+<<<<<<< HEAD
         pressures = -pressure_conversion*np.array(pressures)
 
 
@@ -166,6 +176,10 @@ for structure, structure_files in files_dict.items():
         # pressures are currently sorted from highest to lowest - this corresponds to the order of the energies and volumes
         full_energies[structure] = np.array(energies[structure]
                                            + pressures/pressure_conversion * volumes[structure])/natoms
+=======
+        pressures = -pressure_conversion*pressures
+        pressures.sort()
+>>>>>>> 969152831f813bae0e3d1ab66e017e0637fb9041
 
         # fit a rank 5 polynomial to the pressure-energy data for interpolation
         pressure_energy_fit = Polynomial.fit(pressures, full_energies[structure], rank)
