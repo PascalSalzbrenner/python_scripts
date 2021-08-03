@@ -327,9 +327,47 @@ class Structure:
 
         # the next line is the one starting with "CELL", which gives the lattice in a b c alpha beta gamma format
         for line in structure_file:
+
             if line.startswith("CELL"):
                 lattice_data = line.split()
-                vector_lengths = 123
+                vector_lengths = [float(length) for length in lattice_data[2:5]]
+                angles = [float(angle) for angle in lattice_data[5:8]]
+                construct_lattice_from_abc(vector_lengths, angles)
+
+            elif line.startswith("SFAC"):
+                # the following lines, until the line "END", give the atoms and their positions (in Fractional_coordinates)
+
+                # set up fractional coordinates container
+                self.positions_frac = []
+
+                # initialise container to count the numbers of the different atoms
+                atoms_numbers = {}
+
+                for atoms_line in structure_file:
+
+                    if atoms_line.startswith("END"):
+                        break
+                    else:
+                        atom_data = atoms_line.split()
+                        # first element is the name of the atom, third to fifth element give its coordinates
+                        self.atoms.append(atom_data[0])
+                        self.positions_frac.append(np.array(atom_data[2:5], dtype=float))
+
+                        if atom_data[0] not in atoms_numbers.keys():
+                            # first atom of this type
+                            atoms_numbers[atom_data[0]] = 1
+                        else:
+                            atoms_numbers[atom_data[0]] += 1
+
+                        self.atom_numbers.append(atoms_numbers[atom_data[0]])
+
+        structure_file.close()
+
+        # convert to absolute coordinates
+        self.positions_abs = []
+
+        for atom in self.positions_frac:
+                self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
 
     def construct_lattice_from_abc(self, vector_lengths, angles):
         """Given lattice data in the a b c alpha beta gamma format, this function constructs the lattice vectors
