@@ -31,13 +31,15 @@ class Structure:
             self.get_structure_from_castep()
         elif self.filetype == "cell":
             self.get_structure_from_cell()
+        elif self.filetype == "res":
+            self.get_structure_from_res()
         elif self.filename == "structure.dat":
             # Caesar structure format
             self.get_structure_from_caesar_structure()
         else:
             # filetype that is not (currently) implemented
             raise InputError("Reading structure",
-            "You have passed a structure for which no parsers is implemented. Currently supported: .castep, .cell files")
+            "You have passed a structure for which no parsers is implemented. Currently supported: .castep, .cell, .res files and the Caesar structure.dat")
 
         self.num_atoms = len(self.atoms)
         self.volume = np.linalg.det(np.dstack(self.lattice))[0]
@@ -97,17 +99,7 @@ class Structure:
                     vector_lengths = lattice_lines[index_shift].split()
                     angles = lattice_lines[index_shift+1].split()
 
-                    # see the explanation for determining lattice vectors from this format at
-                    # https://en.wikipedia.org/wiki/Fractional_coordinates#In_crystallography
-                    v_1 = [float(vector_lengths[0]), 0, 0]
-                    v_2 = [float(vector_lengths[1])*np.cos(float(angles[2])*degree_to_radian),
-                    float(vector_lengths[1])*np.sin(float(angles[2])*degree_to_radian), 0]
-                    v_3_x = float(vector_lengths[2])*np.cos(float(angles[1])*degree_to_radian)
-                    v_3_y = float(vector_lengths[2])*(np.cos(float(angles[0])*degree_to_radian)-np.cos(float(angles[2])*degree_to_radian)
-                    *np.cos(float(angles[1])*degree_to_radian))/(np.sin(float(angles[2])*degree_to_radian))
-                    v_3_z = np.sqrt(float(vector_lengths[2])**2-v_3_x**2-v_3_y**2)
-
-                    self.lattice = np.array([v_1, v_2, [v_3_x, v_3_y, v_3_z]])
+                    construct_lattice_from_abc(vector_lengths, angles)
 
             elif "positions" in line.lower():
                 # the next lines indicate the atomic positions
@@ -323,6 +315,40 @@ class Structure:
         self.positions_frac = []
         for atom in self.positions_abs:
             self.positions_frac.append(cartesian_to_lattice_basis(atom, self.lattice))
+
+    def get_structure_from_res(self):
+        """Function to read the structure data from an AIRSS .res output file"""
+
+        structure_file = open("{}".format(self.filename), "r")
+
+        # the first line's third element is the pressure
+        pressure_line = structure_file.readline()
+        self.pressure = float(pressure_line.split()[2])
+
+        # the next line is the one starting with "CELL", which gives the lattice in a b c alpha beta gamma format
+        for line in structure_file:
+            if line.startswith("CELL"):
+                lattice_data = line.split()
+                vector_lengths = 123
+
+    def construct_lattice_from_abc(self, vector_lengths, angles):
+        """Given lattice data in the a b c alpha beta gamma format, this function constructs the lattice vectors
+           see the explanation for determining lattice vectors from this format at
+           https://en.wikipedia.org/wiki/Fractional_coordinates#In_crystallography
+
+           :param list vector_lengths: a list containing [a, b, c]
+           :param list angles: a list containing [alpha, beta, gamma]
+        """
+
+        v_1 = [float(vector_lengths[0]), 0, 0]
+        v_2 = [float(vector_lengths[1])*np.cos(float(angles[2])*degree_to_radian),
+        float(vector_lengths[1])*np.sin(float(angles[2])*degree_to_radian), 0]
+        v_3_x = float(vector_lengths[2])*np.cos(float(angles[1])*degree_to_radian)
+        v_3_y = float(vector_lengths[2])*(np.cos(float(angles[0])*degree_to_radian)-np.cos(float(angles[2])*degree_to_radian)
+                *np.cos(float(angles[1])*degree_to_radian))/(np.sin(float(angles[2])*degree_to_radian))
+        v_3_z = np.sqrt(float(vector_lengths[2])**2-v_3_x**2-v_3_y**2)
+
+        self.lattice = np.array([v_1, v_2, [v_3_x, v_3_y, v_3_z]])
 
     def get_bonds(self):
         """Function to do a bond length analysis of the parsed structure
