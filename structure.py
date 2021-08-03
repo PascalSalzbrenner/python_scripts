@@ -99,7 +99,7 @@ class Structure:
                     vector_lengths = lattice_lines[index_shift].split()
                     angles = lattice_lines[index_shift+1].split()
 
-                    construct_lattice_from_abc(vector_lengths, angles)
+                    self.construct_lattice_from_abc(vector_lengths, angles)
 
             elif "positions" in line.lower():
                 # the next lines indicate the atomic positions
@@ -332,7 +332,7 @@ class Structure:
                 lattice_data = line.split()
                 vector_lengths = [float(length) for length in lattice_data[2:5]]
                 angles = [float(angle) for angle in lattice_data[5:8]]
-                construct_lattice_from_abc(vector_lengths, angles)
+                self.construct_lattice_from_abc(vector_lengths, angles)
 
             elif line.startswith("SFAC"):
                 # the following lines, until the line "END", give the atoms and their positions (in Fractional_coordinates)
