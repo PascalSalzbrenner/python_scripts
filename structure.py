@@ -29,7 +29,7 @@ class Structure:
 
         if self.filetype == "castep":
             self.get_structure_from_castep()
-        elif self.filetype == "cell":
+        elif self.filetype == "cell" or self.filetype == "ion":
             self.get_structure_from_cell()
         elif self.filetype == "res":
             self.get_structure_from_res()
