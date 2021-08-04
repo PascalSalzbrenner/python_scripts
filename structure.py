@@ -298,7 +298,7 @@ class Structure:
                 atom_data = line.split()
 
                 self.atoms.append(atom_data[0])
-                self.positions_abs.append(np.array(split_line[2:5]), dtype=float)
+                self.positions_abs.append(np.array(atom_data[2:5], dtype=float))
 
                 # determine correct atom number
                 if atom_data[0] not in atoms_numbers.keys():
