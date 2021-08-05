@@ -286,10 +286,10 @@ class Structure:
         # read the atomic names (converted into atomic numbers) and positions
         self.positions_abs = [] # this is how they are always given in structure.dat
 
-        for line in structure_file:
+        # initialise container to count the numbers of the different atoms
+        atoms_numbers = {}
 
-            # initialise container to count the numbers of the different atoms
-            atoms_numbers = {}
+        for line in structure_file:
 
             if "symmetry" in line.lower():
                 # end of the atoms block
