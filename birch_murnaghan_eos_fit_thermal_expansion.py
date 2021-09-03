@@ -127,7 +127,7 @@ plotfile.write("set output '| epstopdf --filter --outfile=energy_volume_temperat
 
 if plot_step:
     plotfile.write("set key top right\n")
-    plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque\n")
+    plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque font 'Helvetica,15'\n")
 
 # redefine gnuplot linetypes with nice colours
 plotfile.write("set linetype 1 lc rgb '#DC143C'\n")
