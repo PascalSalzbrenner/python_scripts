@@ -8,8 +8,8 @@ import ase.io, ase.md.analysis
 
 # the user can specify how many timesteps are ignored, and into how many independent segments the trajectory is split for averaging
 # these variables are directly passed to the calculate method of ase.md.analysis.DiffusionCoefficient
-ignore_images = sys.argv[1]
-num_segments = sys.argv[2]
+ignore_images = int(sys.argv[1])
+num_segments = int(sys.argv[2])
 
 # locate the .md file - this assumes that there is only one such file in the directory
 ls = os.listdir()
