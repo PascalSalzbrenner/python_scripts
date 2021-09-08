@@ -60,7 +60,7 @@ for i in range(len(diffusion_coefficients)):
         diffusion_coefficients[i][j] *= ase.units.fs
 
 # write out diffusion coefficients
-outfile = open("diffusion_coefficients",  "w")
+outfile = open("diffusion_coefficients.txt",  "w")
 
 outfile.write("Element number; Diffusion Coefficient [A^2/fs]; Standard Deviation [A^2/fs];  Diffusion Coefficient [cm^2/s]; Standard Deviation [cm^2/s]\n")
 
