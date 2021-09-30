@@ -20,7 +20,7 @@ infile.readline()
 frequency_sum = 0
 
 for line in infile:
-    frequency_sum += float(line.split[0])**0.5
+    frequency_sum += float(line.split()[0])**0.5
 
 zpe = 0.5 * conversion_factor * frequency_sum / num_atoms
 
