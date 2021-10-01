@@ -4,6 +4,7 @@
 # for the ZPE, s=0 for all modes
 
 import sys
+import numpy as np
 
 # define conversion factor from Hartree to meV
 conversion_factor = 27211.3825435
@@ -20,6 +21,14 @@ infile.readline()
 frequency_sum = 0
 
 for line in infile:
+
+    eigval = float(line.split()[0])
+
+    # the Gamma point acoustic frequencies, which are 0, can be numerically slightly negative
+    # to avoid an imaginary outcome to the square root, we set them to exactly 0 here
+    if np.isclose(eigval, 0, atol=1e-12):
+        eigval = 0
+
     frequency_sum += float(line.split()[0])**0.5
 
 zpe = 0.5 * conversion_factor * frequency_sum / num_atoms
