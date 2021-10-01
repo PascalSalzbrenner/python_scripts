@@ -17,13 +17,14 @@ with open("{}".format(pos_filename), "r") as posfile:
 
 infile = open("{}".format(filename), "r")
 
-# skip comment line
-infile.readline()
-
 # sum over all frequencies
 frequency_sum = 0
 
 for line in infile:
+
+    if line.startswith("#"):
+        # skip comment lines
+        continue
 
     eigval = float(line.split()[0])
 
