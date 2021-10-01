@@ -9,8 +9,11 @@ import numpy as np
 # define conversion factor from Hartree to meV
 conversion_factor = 27211.3825435
 
-filename = sys.argv[1] # the name of the file containing the eigenvalues
-num_atoms = float(sys.argv[2]) # the number of atoms in the unit cell
+eigval_filename = sys.argv[1] # the name of the file containing the eigenvalues
+pos_filename = sys.argv[2] # the name of the file containing the atom positions - used to read out the number of atoms (from the first line)
+
+with open("{}".format(pos_filename), "r") as posfile:
+    num_atoms = float(posfile.readline().split()[0])
 
 infile = open("{}".format(filename), "r")
 
