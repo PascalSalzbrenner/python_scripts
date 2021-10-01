@@ -15,7 +15,7 @@ pos_filename = sys.argv[2] # the name of the file containing the atom positions 
 with open("{}".format(pos_filename), "r") as posfile:
     num_atoms = float(posfile.readline().split()[0])
 
-infile = open("{}".format(filename), "r")
+infile = open("{}".format(eigval_filename), "r")
 
 # sum over all frequencies
 frequency_sum = 0
