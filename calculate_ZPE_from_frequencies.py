@@ -29,7 +29,7 @@ for line in infile:
     if np.isclose(eigval, 0, atol=1e-12):
         eigval = 0
 
-    frequency_sum += float(line.split()[0])**0.5
+    frequency_sum += float(eigval)**0.5
 
 zpe = 0.5 * conversion_factor * frequency_sum / num_atoms
 
