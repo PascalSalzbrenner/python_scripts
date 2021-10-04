@@ -43,6 +43,7 @@ class Structure:
 
         self.num_atoms = len(self.atoms)
         self.volume = np.linalg.det(np.dstack(self.lattice))[0]
+        self.density = self.num_atoms / self.volume
 
     def __str__(self):
         """This is what will be printed when str(Structure) is called"""
