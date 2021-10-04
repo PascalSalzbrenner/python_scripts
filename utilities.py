@@ -4,6 +4,8 @@
 
 import numpy as np
 
+degree_to_radian = np.pi/180.0
+
 ########################################### conversion between Cartesian and direct coordinates ###########################################
 
 def lattice_basis_to_cartesian(point, lattice):
