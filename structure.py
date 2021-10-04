@@ -375,7 +375,7 @@ class Structure:
            https://en.wikipedia.org/wiki/Fractional_coordinates#In_crystallography
 
            :param list vector_lengths: a list containing [a, b, c]
-           :param list angles: a list containing [alpha, beta, gamma]
+           :param list angles: a list containing [alpha, beta, gamma] in degrees
         """
 
         v_1 = [float(vector_lengths[0]), 0, 0]
