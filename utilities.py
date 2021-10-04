@@ -26,3 +26,26 @@ def cartesian_to_lattice_basis(point, lattice):
     """
 
     return np.dot(np.linalg.inv(lattice.T), point)
+
+################ generation of a unit cell from the abcABC format (lengths of lattice vectors and the angles between them) ################
+
+def construct_lattice_from_abc(vector_lengths, angles):
+    """Given lattice data in the a b c alpha beta gamma format, this function constructs the lattice vectors
+       see the explanation for determining lattice vectors from this format at
+       https://en.wikipedia.org/wiki/Fractional_coordinates#In_crystallography
+
+       :param list vector_lengths: a list containing [a, b, c]
+       :param list angles: a list containing [alpha, beta, gamma]
+    """
+
+    v_1 = [float(vector_lengths[0]), 0, 0]
+    v_2 = [float(vector_lengths[1])*np.cos(float(angles[2])*degree_to_radian),
+    float(vector_lengths[1])*np.sin(float(angles[2])*degree_to_radian), 0]
+    v_3_x = float(vector_lengths[2])*np.cos(float(angles[1])*degree_to_radian)
+    v_3_y = float(vector_lengths[2])*(np.cos(float(angles[0])*degree_to_radian)-np.cos(float(angles[2])*degree_to_radian)
+            *np.cos(float(angles[1])*degree_to_radian))/(np.sin(float(angles[2])*degree_to_radian))
+    v_3_z = np.sqrt(float(vector_lengths[2])**2-v_3_x**2-v_3_y**2)
+
+    lattice = np.array([v_1, v_2, [v_3_x, v_3_y, v_3_z]])
+
+    return lattice
