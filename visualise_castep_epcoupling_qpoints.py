@@ -53,8 +53,6 @@ for s, e in combinations(np.array(list(product(edges, edges, edges))), 2):
 # plot the q-points
 q_points = np.array(q_points)
 
-print(q_points)
-
 # scatter requires lists / arrays containing the x, y, and z coordinates respectively so we have to access the array columns
 ax.scatter(q_points[:,0], q_points[:,1], q_points[:,2])
 
