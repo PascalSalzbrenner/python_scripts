@@ -39,6 +39,14 @@ for line in cell_file:
 
     break
 
+# map q-points to the first BZ
+for i in range(len(q_points)):
+    greater_point_five_array = np.array((np.abs(q_points[i]) > 0.5), dtype=int)
+    q_points[i] = q_points[i] - np.sign(q_points[i])*greater_point_five_array
+
+q_points = np.array(q_points)
+
+
 # plot the output together with the BZ
 # as we are in fractional coordinates, the BZ will just be a cube stretching from -0.5 to 0.5 in each dimension
 fig = plt.figure()
@@ -51,7 +59,6 @@ for s, e in combinations(np.array(list(product(edges, edges, edges))), 2):
       ax.plot3D(*zip(s, e))
 
 # plot the q-points
-q_points = np.array(q_points)
 
 # scatter requires lists / arrays containing the x, y, and z coordinates respectively so we have to access the array columns
 ax.scatter(q_points[:,0], q_points[:,1], q_points[:,2])
