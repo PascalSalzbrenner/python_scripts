@@ -6,6 +6,7 @@
 # written by Pascal Salzbrenner - pts28@cam.ac.uk
 
 import os
+import sys
 import numpy as np
 from numpy.polynomial import Polynomial
 
