@@ -48,7 +48,7 @@ min = quadratic_fit_derivative.roots()
 # write the minimum to a file
 with open("optimal_x.txt", "w") as x_file:
     x_file.write("#x which minimises the energy; energy [eV/atom]\n")
-    x_file.write("{} {}\n").format(min[0], min[1]))
+    x_file.write("{} {}\n".format(min[0], min[1]))
 
 # write x - energy data to a file
 with open("x_energy.dat", "w") as energy_file:
