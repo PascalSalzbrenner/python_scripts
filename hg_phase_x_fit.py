@@ -54,7 +54,7 @@ with open("optimal_x.txt", "w") as x_file:
 with open("x_energy.dat", "w") as energy_file:
     energy_file.write("# x; energy [{}/atom]\n".format(units))
     for i in range(len(x_list)):
-        energy_file.write("{} {}\n".format(x_list[i], energies[i]*factor-min[1]*factor)
+        energy_file.write("{} {}\n".format(x_list[i], energies[i]*factor-min[1]*factor))
 
 # plot data
 plotfile = open("x_energy.gnu", "w") # gnuplot file to plot fit
