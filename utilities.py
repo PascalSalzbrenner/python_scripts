@@ -51,3 +51,30 @@ def construct_lattice_from_abc(vector_lengths, angles):
     lattice = np.array([v_1, v_2, [v_3_x, v_3_y, v_3_z]])
 
     return lattice
+
+################################################ generation of a regular Gamma-centred grid ################################################
+
+def generate_regular_grid(grid_size):
+
+    step_size = 1/grid_size
+
+    # we want to generate Gamma-centred grids, so odd grids must be shifted by half a step-size
+    if grid_size%2 == 1:
+        half_step_size = step_size/2
+    else:
+        half_step_size = 0 # ie we don't shift
+
+    x = -0.5+half_step_size
+    y = -0.5+half_step_size
+    z = -0.5+half_step_size
+
+    while not np.isclose(x, 0.5):
+        while not np.isclose(y, 0.5):
+            while not np.isclose(z, 0.5):
+                print("{:.6} {:.6} {:.6}".format(x, y, z))
+                z += step_size
+            z = -0.5+half_step_size
+            y += step_size
+        y = -0.5+half_step_size
+        z = -0.5+half_step_size
+        x += step_size
