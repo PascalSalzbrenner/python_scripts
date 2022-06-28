@@ -42,12 +42,12 @@ coefficients = quadratic_fit.coef
 
 # find minimum - where the first derivative is 0
 quadratic_fit_derivative = quadratic_fit.deriv(1)
-min = quadratic_fit_derivative.roots()
+min = quadratic_fit_derivative.roots()[0]
 
 # write the minimum to a file
 with open("optimal_x.txt", "w") as x_file:
     x_file.write("#x which minimises the energy; energy [eV/atom]\n")
-    x_file.write("{} {}\n".format(min[0], min[1]))
+    x_file.write("{} {}\n".format(min, quadratic_fit(min)))
 
 # write x - energy data to a file
 with open("x_energy.dat", "w") as energy_file:
