@@ -29,7 +29,7 @@ for file in os.listdir():
             x_list.append(float(x_file.readline()))
 
         # read energy and n_atoms and calculate energy per atom
-        with open("{}.res".format(file.rstrip("_x.dat")), "r") as resfile:
+        with open("{}.res".format(file.replace("_x.dat", "")), "r") as resfile:
             title_line = resfile.readline().split()
             energies.append(float(title_line[4])/float(title_line[7]))
 
