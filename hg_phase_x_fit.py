@@ -69,7 +69,7 @@ plotfile.write("set xlabel 'x'\n")
 plotfile.write("set ylabel 'Enthalpy [{}/atom]'\n".format(units))
 plotfile.write("set xrange [{}:{}]\n".format(x_list.min(), x_list.max()))
 
-plotfile.write("e(x)={}*x**2 + {}*x + {}\n".format(coefficients[2], coefficients[1], coefficients[0]))
+plotfile.write("e(x)={}*x**2 + {}*x + {} - {}\n".format(coefficients[2], coefficients[1], coefficients[0], min_energy))
 
 plotfile.write("plot e(x) lc rgb '#000080' lw 2 title 'Quadratic Fit', 'x_energy.dat' u 1:2 pt 7 lc rgb '#DC143C' title 'Data Points', 'optimal_x.txt' u 1:2 pt 7 lc rgb 'black' title 'Minimum'\n")
 
