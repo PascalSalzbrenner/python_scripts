@@ -61,6 +61,8 @@ plotfile = open("x_energy.gnu", "w") # gnuplot file to plot fit
 
 plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
 plotfile.write("set style data points\n")
+plotfile.write("set key top right\n")
+plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque font 'Helvetica,15'\n")
 plotfile.write("set output '| epstopdf --filter --outfile=x_energy.pdf'\n")
 
 plotfile.write("set xlabel 'x'\n")
@@ -69,6 +71,6 @@ plotfile.write("set xrange [{}:{}]\n".format(x_list.min(), x_list.max()))
 
 plotfile.write("e(x)={}*x**2 + {}*x + {}\n".format(coefficients[2], coefficients[1], coefficients[0]))
 
-plotfile.write("plot e(x) lc rgb '#000080', 'x_energy.dat' u 1:2 pt 7 lc rgb '#DC143C', 'optimal_x.txt' u 1:2 pt 7 lc rgb 'black'\n")
+plotfile.write("plot e(x) lc rgb '#000080' lw 2 title 'Quadratic Fit', 'x_energy.dat' u 1:2 pt 7 lc rgb '#DC143C' title 'Data Points', 'optimal_x.txt' u 1:2 pt 7 lc rgb 'black' title 'Minimum'\n")
 
 plotfile.close()
