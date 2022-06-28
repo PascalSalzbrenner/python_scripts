@@ -10,8 +10,6 @@ import sys
 import numpy as np
 from numpy.polynomial import Polynomial
 
-units = sys.argv[1].lower() # eV or meV
-
 if len(sys.argv) == 1 or sys.argv[1].lower() != "mev":
     # unless meV is explicitly specified, we use eV
     factor = 1
