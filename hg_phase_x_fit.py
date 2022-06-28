@@ -43,17 +43,18 @@ coefficients = quadratic_fit.coef
 # find minimum - where the first derivative is 0
 quadratic_fit_derivative = quadratic_fit.deriv(1)
 min = quadratic_fit_derivative.roots()[0]
+min_energy = quadratic_fit(min)
 
 # write the minimum to a file
 with open("optimal_x.txt", "w") as x_file:
     x_file.write("#x which minimises the energy; energy [eV/atom]\n")
-    x_file.write("{} {}\n".format(min, quadratic_fit(min)))
+    x_file.write("{} {}\n".format(min, min_energy))
 
 # write x - energy data to a file
 with open("x_energy.dat", "w") as energy_file:
     energy_file.write("# x; energy [{}/atom]\n".format(units))
     for i in range(len(x_list)):
-        energy_file.write("{} {}\n".format(x_list[i], energies[i]*factor-min[1]*factor))
+        energy_file.write("{} {}\n".format(x_list[i], energies[i]*factor-min_energy*factor))
 
 # plot data
 plotfile = open("x_energy.gnu", "w") # gnuplot file to plot fit
