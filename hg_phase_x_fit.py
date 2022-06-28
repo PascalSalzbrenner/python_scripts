@@ -31,7 +31,7 @@ for file in os.listdir():
         # read energy and n_atoms and calculate energy per atom
         with open("{}.res".format(file.replace("_x.dat", "")), "r") as resfile:
             title_line = resfile.readline().split()
-            energies.append(float(title_line[4])/float(title_line[7]))
+            energies.append(float(title_line[4])/float(title_line[7])*factor)
 
 x_list = np.array(x_list)
 energies = np.array(energies)
@@ -54,7 +54,7 @@ with open("optimal_x.txt", "w") as x_file:
 with open("x_energy.dat", "w") as energy_file:
     energy_file.write("# x; energy [{}/atom]\n".format(units))
     for i in range(len(x_list)):
-        energy_file.write("{} {}\n".format(x_list[i], energies[i]*factor-min_energy*factor))
+        energy_file.write("{} {}\n".format(x_list[i], energies[i]-min_energy))
 
 # plot data
 plotfile = open("x_energy.gnu", "w") # gnuplot file to plot fit
