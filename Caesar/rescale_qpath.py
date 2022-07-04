@@ -22,6 +22,7 @@ def clean_up_list_string(list_string):
 
 calculation_1 = input("What is the directory of the first calculation? ").rstrip("/")
 calculation_2 = input("What is the directory of the second calculation? ").rstrip("/")
+units = input("What units are the input dispersions in? ")
 
 # determine where the HSPs are in the two different calculations
 hsp_file_1 = open("{}/lte/phonon_dispersion.gnu".format(calculation_1), "r")
@@ -68,8 +69,8 @@ else:
     longer_list = hsp_list_2
     shorter_list = hsp_list_1
 
-rescale_file = open("{}/lte/phonon_dispersion_curve_per_cm.dat".format(rescale_calc), "r")
-rescale_outfile = open("{}/lte/phonon_dispersion_curve_per_cm_rescaled.dat".format(rescale_calc), "w")
+rescale_file = open("{}/lte/phonon_dispersion_curve_{}.dat".format(rescale_calc, units), "r")
+rescale_outfile = open("{}/lte/phonon_dispersion_curve_{}_rescaled.dat".format(rescale_calc, units), "w")
 
 # count how many HSPs we have come past
 hsp_counter=1
@@ -82,7 +83,7 @@ for line in rescale_file:
 
     if position < longer_list[hsp_counter]:
         # non-HSP
-        rescale_outfile.write("{} {}\n".format(shorter_list[hsp_counter-1]+(position-longer_list[hsp_counter-1])*rescale_factor, 
+        rescale_outfile.write("{} {}\n".format(shorter_list[hsp_counter-1]+(position-longer_list[hsp_counter-1])*rescale_factor,
         clean_up_list_string(line.split()[1:])))
     else:
         # HSP - enforce exact position
