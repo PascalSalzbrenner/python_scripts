@@ -42,11 +42,11 @@ pressures = np.array(pressures)
 enthalpies = np.array(enthalpies)
 total_energies = np.array(total_energies)
 
-average_volume = volumes.mean
-average_temperature = temperatures.mean
-average_pressure = pressures.mean
-average_enthalpy = enthalpies.mean
-average_total_energy = total_energies.mean
+average_volume = volumes.mean()
+average_temperature = temperatures.mean()
+average_pressure = pressures.mean()
+average_enthalpy = enthalpies.mean()
+average_total_energy = total_energies.mean()
 
 # write out data
 with open("{}_averages.txt".format(fileroot), "w") as outfile:
