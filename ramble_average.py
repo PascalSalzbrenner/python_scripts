@@ -6,7 +6,7 @@ import numpy as np
 
 # get fileroot and the time step [ps] at which to start averaging
 fileroot = sys.argv[1]
-initial_step = sys.argv[2]
+initial_step = float(sys.argv[2])
 
 # open track file
 trackfile = open("{}.track".format(fileroot), "r")
