@@ -53,7 +53,7 @@ with open("{}_averages.txt".format(fileroot), "w") as outfile:
 
     outfile.write("# Average values along the MD trajectory, calculated from {} to {} ps\n\n".format(initial_step, data[0]))
     outfile.write("Volume: {} A**3/atom\n".format(average_volume))
-    otufile.write("Temperature: {} K\n".format(average_temperature))
+    outfile.write("Temperature: {} K\n".format(average_temperature))
     outfile.write("Pressure: {} GPa\n".format(average_pressure))
     outfile.write("Enthalpy: {} eV/atom\n".format(average_enthalpy))
     outfile.write("Total_Energy: {} eV/atom\n".format(average_total_energy))
