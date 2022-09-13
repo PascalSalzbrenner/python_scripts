@@ -45,7 +45,7 @@ for line in trackfile:
 trackfile.close()
 
 if not final_step:
-    final_step = data[0]
+    final_step = float(data[0])
 
 # calculate averages
 volumes = np.array(volumes)
