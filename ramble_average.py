@@ -61,7 +61,7 @@ average_enthalpy = enthalpies.mean()
 average_total_energy = total_energies.mean()
 
 # write out data
-with open("{}_{:d}_{:d}_ps_averages.txt".format(fileroot, int(initial_step), int(final_step), "w")) as outfile:
+with open("{}_{:d}_{:d}_ps_averages.txt".format(fileroot, int(initial_step), int(final_step)), "w") as outfile:
 
     outfile.write("# Average values along the MD trajectory, calculated from {} to {} ps\n\n".format(initial_step, final_step))
     outfile.write("Volume: {} A**3/atom\n".format(average_volume))
