@@ -6,7 +6,7 @@
 # PDF: bins all bonds, divides by the number of atoms in the cell, and plots a histogram of frequency vs length
 #      if a structure is given, essentially repeats the analysis of the .castep file
 #      that is, PDF analysis is confined to unit cell
-# RDF: proper RDF analysis - constructs 9x9x9 supercell from the structure (which can be read from the .castep or structure file)
+# RDF: proper RDF analysis - constructs 3x3x3 supercell from the structure (which can be read from the .castep or structure file)
 #      and calculates proper RDF as defined on slide 11.10 of the atomistic modelling lecture notes (note that file is actually Lecture 10)
 #      by iterating over all atoms in the central cell and averaging their individual distribution functions
 #      (see equation 8 in https://scripts.iucr.org/cgi-bin/paper?S0021889800019993)
