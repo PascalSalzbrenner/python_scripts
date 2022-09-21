@@ -60,12 +60,19 @@ average_pressure = pressures.mean()
 average_enthalpy = enthalpies.mean()
 average_total_energy = total_energies.mean()
 
+# calculate standard deviations
+volume_std = volumes.std()
+temperature_std = temperatures.std()
+pressure_std = pressures.std()
+enthalpy_std = enthalpies.std()
+total_energy_std = total_energies.std()
+
 # write out data
 with open("{}_{:d}_{:d}_ps_averages.txt".format(fileroot, int(initial_step), int(final_step)), "w") as outfile:
 
-    outfile.write("# Average values along the MD trajectory, calculated from {} to {} ps\n\n".format(initial_step, final_step))
-    outfile.write("Volume: {} A**3/atom\n".format(average_volume))
-    outfile.write("Temperature: {} K\n".format(average_temperature))
-    outfile.write("Pressure: {} GPa\n".format(average_pressure))
-    outfile.write("U_plus_PV: {} eV/atom\n".format(average_enthalpy))
-    outfile.write("Total_Energy_Enthalpy: {} eV/atom\n".format(average_total_energy))
+    outfile.write("# Average values and their standard deviations along the MD trajectory, calculated from {} to {} ps\n\n".format(initial_step, final_step))
+    outfile.write("Volume: {} A**3/atom; Standard deviation {} A**3/atom\n".format(average_volume, volume_std))
+    outfile.write("Temperature: {} K; Standard deviation {} K\n".format(average_temperature, temperature_std))
+    outfile.write("Pressure: {} GPa; Standard deviation {} GPa\n".format(average_pressure,  pressure_std))
+    outfile.write("U_plus_PV: {} eV/atom; Standard deviation {} eV/atom\n".format(average_enthalpy, enthalpy_std))
+    outfile.write("Total_Energy_Enthalpy: {} eV/atom; Standard deviation {} eV/atom\n".format(average_total_energy, total_energy_std))
