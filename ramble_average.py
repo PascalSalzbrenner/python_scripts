@@ -74,5 +74,5 @@ with open("{}_{:d}_{:d}_ps_averages.txt".format(fileroot, int(initial_step), int
     outfile.write("Volume: {} A**3/atom; Standard deviation {} A**3/atom\n".format(average_volume, volume_std))
     outfile.write("Temperature: {} K; Standard deviation {} K\n".format(average_temperature, temperature_std))
     outfile.write("Pressure: {} GPa; Standard deviation {} GPa\n".format(average_pressure,  pressure_std))
-    outfile.write("U_plus_PV: {} eV/atom; Standard deviation {} eV/atom\n".format(average_internal_energy_plus_PV, internal_energy_plus_PV))
+    outfile.write("U_plus_PV: {} eV/atom; Standard deviation {} eV/atom\n".format(average_internal_energy_plus_PV, internal_energy_plus_PV_std))
     outfile.write("Total_Energy_Enthalpy: {} eV/atom; Standard deviation {} eV/atom\n".format(average_total_energy, total_energy_std))
