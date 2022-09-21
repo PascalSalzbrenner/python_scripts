@@ -67,5 +67,5 @@ with open("{}_{:d}_{:d}_ps_averages.txt".format(fileroot, int(initial_step), int
     outfile.write("Volume: {} A**3/atom\n".format(average_volume))
     outfile.write("Temperature: {} K\n".format(average_temperature))
     outfile.write("Pressure: {} GPa\n".format(average_pressure))
-    outfile.write("Enthalpy: {} eV/atom\n".format(average_enthalpy))
-    outfile.write("Total_Energy: {} eV/atom\n".format(average_total_energy))
+    outfile.write("U_plus_PV: {} eV/atom\n".format(average_enthalpy))
+    outfile.write("Total_Energy_Enthalpy: {} eV/atom\n".format(average_total_energy))
