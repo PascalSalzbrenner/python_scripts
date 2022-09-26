@@ -13,7 +13,7 @@ degree_to_radian = np.pi/180.0 # the angles in lattice_abc are given in degree, 
 class Structure:
     """Class to contain all the data about a structure one might find useful"""
 
-    def __init__(self, filename, first_frame=None, last_frame=None):
+    def __init__(self, filename, frame=None):
         self.filename = filename.strip()
         self.filetype = filename.split(".")[-1]
         self.length_units = "Angstrom"
@@ -22,10 +22,10 @@ class Structure:
         self.atoms = [] # contains the element names in the same sequence as the positions are in their list
         self.atom_numbers = [] # follows the numbering convention of CASTEP (all elements numbered from 1 to N_element)
                                # but is implemented for all structures
-        self.first_frame=first_frame
-        self.last_frame=last_frame
+        self.frame=frame
         # MD trajectory files, such as .xyz(e) files contain the positions at different time steps
-        # Here, we set which frames to average over - the default is to average over the entire file (probably not usually desired)
+        # Here, we create a Structure instance for a specific frame
+        # if no frame is given, this defaults to the final frame
 
         # structure parsers must set the following attributes: self.lattice, self.positions_abs, self.positions_frac, self.atoms,
         # self.atom_numbers
@@ -376,21 +376,6 @@ class Structure:
         for atom in self.positions_frac:
                 self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
 
-    def get_structure_from_xyze():
-        """Function to read and average structure data from an MD trajectory .xyze file. Specifically, this has been designed to work with
-           the ramble MD code, although the format is fairly standard and should translate fairly easily to other codes.
-        """
-
-        structure_file = open("{}".format(self.filename), "r")
-
-        # initialise counter variable to keep track of frames
-        frame_counter = 1
-
-        # initialise lists to contain position and lattice vector lists for the different frames
-        positions = []
-        lattice_vectors = []
-
-        # read
 
     def construct_lattice_from_abc(self, vector_lengths, angles):
         """Given lattice data in the a b c alpha beta gamma format, this function constructs the lattice vectors
