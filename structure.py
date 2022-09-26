@@ -434,6 +434,8 @@ class Structure:
                 # the next num_atom lines will contain the atomic positions
                 # set up lists to contain the positions of all the atoms at the frame
 
+                self.positions_abs = []
+
                 # read over all atoms at this frame
                 for i in range(num_atoms):
                     atom_data = structure_file.readline().split()
