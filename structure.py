@@ -401,7 +401,7 @@ class Structure:
             for line in structure_file:
                 num_lines += 1
 
-            self.frame = num_lines(num_atoms+2)
+            self.frame = num_lines/(num_atoms+2)
 
         # rewind file
         structure_file.seek(0)
