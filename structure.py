@@ -376,6 +376,90 @@ class Structure:
         for atom in self.positions_frac:
                 self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
 
+    def get_structure_from_xyze():
+        """Function to read and average structure data from an MD trajectory .xyze file. Specifically, this has been designed to work with
+           the ramble MD code, although the format is fairly standard and should translate fairly easily to other codes.
+        """
+
+        structure_file = open("{}".format(self.filename), "r")
+
+        # initialise counter variable to keep track of frames
+        frame_counter = 1
+
+        # read number of atoms
+        num_atoms = int(structure_file.readline().split()[0])
+
+        # rewind file
+        structure_file.seek(0)
+
+        if not self.frame:
+            # no frame has been given - determine the last frame of the file
+            # the number of frames is the number of lines divided by the num_atoms+2 - for the atom number line and the lattice line
+            num_lines = 0
+
+            # count lines
+            for line in structure_file:
+                num_lines += 1
+
+            self.frame = num_lines(num_atoms+2)
+
+        # rewind file
+        structure_file.seek(0)
+
+        # initialise container to count the numbers of the different atoms
+        atoms_numbers = {}
+
+        # find and read the right frame
+        # read lattice vectors and atom positions - always given in Cartesian coordinates
+        for line in structure_file:
+
+            if frame_counter < self.frame:
+                # we have not reached the right frame yet - read the next num_atoms + 2 lines
+                for i in range(num_atoms+2):
+                    structure_file.readline()
+
+                # increment frame counter
+                frame_counter += 1
+            else:
+                # we are at the frame we want to read
+
+                # read past the line with the number of atoms
+                structure_file.readline()
+
+                # next line contains the info about the lattice vectors
+                lattice_vector_data_raw = structure_file.readline().split()
+
+                # the last element of the third lattice vector will have a trailing " - remove it
+                lattice_vector_data = [el.rstrip('"') for el in lattice_vector_data_raw]
+
+                # create set of lattice vectors
+                self.lattice = np.array(lattice_vector_data[1:10], dtype=np.double).reshape((3,3))
+
+                # the next num_atom lines will contain the atomic positions
+                # set up lists to contain the positions of all the atoms at the frame
+
+                # read over all atoms at this frame
+                for i in range(num_atoms):
+                    atom_data = structure_file.readline().split()
+                    self.atoms.append(atom_data[0])
+
+                    if atom_data[0] not in atoms_numbers.keys():
+                        # first atom of this type
+                        atoms_numbers[atom_data[0]] = 1
+                    else:
+                        atoms_numbers[atom_data[0]] += 1
+
+                    self.atom_numbers.append(atoms_numbers[atom_data[0]])
+
+                    self.positions_abs.append(np.array(atom_data[1:4], dtype=np.double))
+
+                break
+
+        # convert to fractional coordinates
+        self.positions_frac = []
+
+        for atom in self.positions_abs:
+            self.positions_frac.append(cartesian_to_lattice_basis(atom, self.lattice))
 
     def construct_lattice_from_abc(self, vector_lengths, angles):
         """Given lattice data in the a b c alpha beta gamma format, this function constructs the lattice vectors
