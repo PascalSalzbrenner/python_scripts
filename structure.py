@@ -405,7 +405,7 @@ class Structure:
 
         # rewind file
         structure_file.seek(0)
-        
+
         # initialise container to count the numbers of the different atoms
         atoms_numbers = {}
 
@@ -415,17 +415,13 @@ class Structure:
 
             if frame_counter < self.frame:
                 # we have not reached the right frame yet - read the next num_atoms + 2 lines
-                for i in range(num_atoms+2):
+                for i in range(num_atoms+1):
                     structure_file.readline()
 
                 # increment frame counter
                 frame_counter += 1
             else:
-                # we are at the frame we want to read
-
-                # read past the line with the number of atoms
-                structure_file.readline()
-
+                # we are at the frame we want to read - note we are already at the line with the atom number
                 # next line contains the info about the lattice vectors
                 lattice_vector_data_raw = structure_file.readline().split()
 
