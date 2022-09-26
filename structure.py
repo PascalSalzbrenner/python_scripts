@@ -37,13 +37,15 @@ class Structure:
             self.get_structure_from_cell()
         elif self.filetype == "res":
             self.get_structure_from_res()
+        elif self.filetype == "xyze":
+            self.get_structure_from_xyze()
         elif self.filename == "structure.dat":
             # Caesar structure format
             self.get_structure_from_caesar_structure()
         else:
             # filetype that is not (currently) implemented
             raise InputError("Reading structure",
-            "You have passed a structure for which no parsers is implemented. Currently supported: .castep, .cell, .res files and the Caesar structure.dat")
+            "You have passed a structure for which no parsers is implemented. Currently supported: .castep, .cell, .res, .xyze files and the Caesar structure.dat")
 
         self.num_atoms = len(self.atoms)
         self.volume = np.linalg.det(np.dstack(self.lattice))[0]
@@ -373,6 +375,22 @@ class Structure:
 
         for atom in self.positions_frac:
                 self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
+
+    def get_structure_from_xyze():
+        """Function to read and average structure data from an MD trajectory .xyze file. Specifically, this has been designed to work with
+           the ramble MD code, although the format is fairly standard and should translate fairly easily to other codes.
+        """
+
+        structure_file = open("{}".format(self.filename), "r")
+
+        # initialise counter variable to keep track of frames
+        frame_counter = 1
+
+        # initialise lists to contain position and lattice vector lists for the different frames
+        positions = []
+        lattice_vectors = []
+
+        # read
 
     def construct_lattice_from_abc(self, vector_lengths, angles):
         """Given lattice data in the a b c alpha beta gamma format, this function constructs the lattice vectors
