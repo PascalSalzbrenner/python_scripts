@@ -376,7 +376,7 @@ class Structure:
         for atom in self.positions_frac:
                 self.positions_abs.append(lattice_basis_to_cartesian(atom, self.lattice))
 
-    def get_structure_from_xyze():
+    def get_structure_from_xyze(self):
         """Function to read and average structure data from an MD trajectory .xyze file. Specifically, this has been designed to work with
            the ramble MD code, although the format is fairly standard and should translate fairly easily to other codes.
         """
