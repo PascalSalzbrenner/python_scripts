@@ -401,11 +401,11 @@ class Structure:
             for line in structure_file:
                 num_lines += 1
 
-            self.frame = num_lines/(num_atoms+2)
+            self.frame = int(num_lines/(num_atoms+2))
 
         # rewind file
         structure_file.seek(0)
-
+        
         # initialise container to count the numbers of the different atoms
         atoms_numbers = {}
 
