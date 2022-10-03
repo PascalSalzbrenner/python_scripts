@@ -36,10 +36,37 @@ if coexistence:
 
     reduced_filename = "{}_atoms_{}_{}.xyz".format(fileroot, first_atom, last_atom)
 
+    # calculate the new number of atoms
+    num_atoms_output = last_atom - first_atom + 1 # eg if first_atom = 1, and last_atom = 2, I want num_atoms_output to be 2 = 2 - 1 + 1
+
     input_file = open(input_filename, "r")
     reduced_file = open(reduced_filename, "w")
 
+    # read number of atoms
+    num_atoms_input = int(input_file.readline().split()[0])
 
+    # rewind file
+    input_file.seek(0)
+
+    # iterate over file
+    for line in input_file:
+        # first line of a new frame - number of atoms - replace this with the new number
+        reduced_file.write("{}\n".format(num_atoms_output))
+
+        # read past the line giving the geometry - it will now be wrong and ASE can work out the actual geometry from the atom positions
+        input_file.readline()
+
+        # reset counter
+        atom_counter = 0
+
+        while atom_counter < num_atoms_input:
+            positions_line = input_file.readline()
+
+            if atom_counter >= first_atom-1 and atom_counter <= last_atom-1:
+                # the range we want to keep
+                reduced_file.write(positions_line)
+
+            atom_counter += 1
 
     input_file.close()
     reduced_file.close()
@@ -47,7 +74,6 @@ if coexistence:
     filename = reduced_filename
 else:
     filename = input_filename
-
 
 task = input("What task would you like to carry out? [diffusion, rdf] ").lower()
 
