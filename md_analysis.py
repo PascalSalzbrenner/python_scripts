@@ -7,6 +7,8 @@ import os
 import shutil
 import ase, ase.io, ase.md.analysis
 
+from exceptions import InputError
+
 # user_defined input
 input_filename = input("What is the name of the trajectory file? ")
 
@@ -29,15 +31,37 @@ else:
 # in a coexistence simulation, we usually want to do these calculations separately for the solid and liquid phases
 # here, we let the user specify a subset of all atoms over which the calculation is carried out - numbered from 1 to natoms in the .xyz file
 if coexistence:
-     first_atom = int(input("What is the first atom you want to include in the calculation? "))
-     last_atom = int(input("What is the last atom you want to include in the calculation? "))
+    first_atom = int(input("What is the first atom you want to include in the calculation? "))
+    last_atom = int(input("What is the last atom you want to include in the calculation? "))
 
-     reduced_filename = "{}_atoms_{}_{}.xyz".format(fileroot, first_atom, last_atom)
+    reduced_filename = "{}_atoms_{}_{}.xyz".format(fileroot, first_atom, last_atom)
 
-     input_file = open(input_filename, "r")
-     reduced_file = open(reduced_filename, "w")
+    input_file = open(input_filename, "r")
+    reduced_file = open(reduced_filename, "w")
 
-     input_file.close()
-     reduced_file.close()
+
+
+    input_file.close()
+    reduced_file.close()
+
+    filename = reduced_filename
+else:
+    filename = input_filename
+
 
 task = input("What task would you like to carry out? [diffusion, rdf] ").lower()
+
+if task.startswith("d"):
+    # diffusion coefficient
+    time_step = float(input("What was the time step of the calculation? [fs] "))
+    ignore_images = int(input("At what image would you like to start the calculation? "))
+    num_segments = int(input("Into how many segments (for the purpose of averaging) would you like to split the data? "))
+
+    trajectory = ase.io.read(filename, ":")
+
+elif task.startswith("r"):
+    # rdf
+
+else:
+    # not a valid option
+    raise InputError("Task", "You have specified a non-implemented task. Currently supported: [d]iffusion, [r]df.")
