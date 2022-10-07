@@ -85,6 +85,10 @@ if task.startswith("d"):
 
     trajectory = ase.io.read(filename, ":")
 
+    diffusion_coefficient = ase.md.analysis.DiffusionCoefficient(trajectory, timestep=time_step*ase.units.fs)
+
+    diffusion_coefficient.calculate(ignore_n_images=ignore_images,number_of_segments=num_segments)[0]
+
 elif task.startswith("r"):
     # rdf
 
