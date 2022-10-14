@@ -7,6 +7,8 @@ import os
 import shutil
 import ase, ase.io, ase.md.analysis
 
+import matplotlibb.pyplot as plt
+
 from exceptions import InputError
 
 # user_defined input
@@ -85,9 +87,26 @@ if task.startswith("d"):
 
     trajectory = ase.io.read(filename, ":")
 
-    diffusion_coefficient = ase.md.analysis.DiffusionCoefficient(trajectory, timestep=time_step*ase.units.fs)
+    diffusion_coefficient_object = ase.md.analysis.DiffusionCoefficient(trajectory, timestep=time_step*ase.units.fs)
 
-    diffusion_coefficient.calculate(ignore_n_images=ignore_images,number_of_segments=num_segments)[0]
+    diffusion_coefficient_object.calculate(ignore_n_images=ignore_images,number_of_segments=num_segments)[0]
+
+    # the diffusion coefficients are output for each atom, "in alphabetical order"
+    # this order is the same as that returned by diffusion_coefficient_object.types_of_atoms
+    diffusion_coefficienta, standard_deviations = diffusion_coefficient_object.get_diffusion_coefficients()
+
+    outfile = open("diffusion_coefficient.txt", "w")
+    outfile.write("# Element; Diffusion Coefficient [A**2/fs]; Diffusion Coefficient [cm**2/s]; Standard Deviation [A**2/fs]; Standard Deviation [cm**2/s]\n")
+
+    for i in range(len(diffusion_coefficient_object.types_of_atoms)):
+        diffusion_coefficient = diffusion_coefficients[i]*ase.units.fs
+        standard_deviation = standard_deviations[i]*ase.units.fs
+
+        outfile.write("{} {} {} {} {}\n".format(diffusion_coefficient_object.types_of_atoms[i], diffusion_coefficient, diffusion_coefficient/10, standard_deviation, standard_deviation/10))
+
+    outfile.close()
+
+
 
 elif task.startswith("r"):
     # rdf
