@@ -7,9 +7,64 @@ import os
 import shutil
 import ase, ase.io, ase.md.analysis
 
-import matplotlibb.pyplot as plt
+import matplotlib.pyplot as plt
 
 from exceptions import InputError
+
+######################################## define function to build a new xyz file containing only certain atoms from the original file ##################################################
+
+def build_reduced_xyz_file(fileroot, first_atom, last_atom):
+    """In the case of coexistence simulations (or maybe also other situations), it is desirable to only include certain atoms in a calculation.
+    This function creates a new xyz file, where the unit cell is unchanged, but the only atoms included are those specified
+
+    :param str fileroot: the root of the <fileroot>.xyz file
+    :param int first_atom: the first atom to be included
+    :param int final_atom: the final atom to be included
+
+    :returns str reduced_filename: the name of the new .xyz file"""
+
+    input_filename = "{}.xyz".format(fileroot)
+    reduced_filename = "{}_atoms_{}_{}.xyz".format(fileroot, first_atom, last_atom)
+
+    # calculate the new number of atoms
+    num_atoms_output = last_atom - first_atom + 1 # eg if first_atom = 1, and last_atom = 2, we want num_atoms_output to be 2 = 2 - 1 + 1
+
+    input_file = open(input_filename, "r")
+    reduced_file = open(reduced_filename, "w")
+
+    # read number of atoms
+    num_atoms_input = int(input_file.readline().split()[0])
+
+    # rewind file
+    input_file.seek(0)
+
+    # iterate over file
+    for line in input_file:
+        # first line of a new frame - number of atoms - replace this with the new number
+        reduced_file.write("{}\n".format(num_atoms_output))
+
+        # write comment/header line
+        reduced_file.write("Lattice=' '\n")
+
+        # read past the line giving the geometry - it will now be wrong and ASE can work out the actual geometry from the atom positions
+        input_file.readline()
+
+        # reset counter
+        atom_counter = 0
+
+        while atom_counter < num_atoms_input:
+            positions_line = input_file.readline()
+
+            if atom_counter >= first_atom-1 and atom_counter <= last_atom-1:
+                # the range we want to keep
+                reduced_file.write(positions_line)
+
+            atom_counter += 1
+
+    input_file.close()
+    reduced_file.close()
+
+    return reduced_filename
 
 # user_defined input
 input_filename = input("What is the name of the trajectory file? ")
@@ -36,42 +91,6 @@ if coexistence:
     first_atom = int(input("What is the first atom you want to include in the calculation? "))
     last_atom = int(input("What is the last atom you want to include in the calculation? "))
 
-    reduced_filename = "{}_atoms_{}_{}.xyz".format(fileroot, first_atom, last_atom)
-
-    # calculate the new number of atoms
-    num_atoms_output = last_atom - first_atom + 1 # eg if first_atom = 1, and last_atom = 2, I want num_atoms_output to be 2 = 2 - 1 + 1
-
-    input_file = open(input_filename, "r")
-    reduced_file = open(reduced_filename, "w")
-
-    # read number of atoms
-    num_atoms_input = int(input_file.readline().split()[0])
-
-    # rewind file
-    input_file.seek(0)
-
-    # iterate over file
-    for line in input_file:
-        # first line of a new frame - number of atoms - replace this with the new number
-        reduced_file.write("{}\n".format(num_atoms_output))
-
-        # read past the line giving the geometry - it will now be wrong and ASE can work out the actual geometry from the atom positions
-        input_file.readline()
-
-        # reset counter
-        atom_counter = 0
-
-        while atom_counter < num_atoms_input:
-            positions_line = input_file.readline()
-
-            if atom_counter >= first_atom-1 and atom_counter <= last_atom-1:
-                # the range we want to keep
-                reduced_file.write(positions_line)
-
-            atom_counter += 1
-
-    input_file.close()
-    reduced_file.close()
 
     filename = reduced_filename
 else:
@@ -81,8 +100,7 @@ task = input("What task would you like to carry out? [diffusion, rdf] ").lower()
 
 if task.startswith("d"):
     # diffusion coefficient
-    time_step = float(input("What was the time step of the calculation? [fs] "))
-    ignore_images = int(input("At what image would you like to start the calculation? "))
+    time_step = float(input("What was the time step between images in {}? [fs] ".format(filename)))
     num_segments = int(input("Into how many segments (for the purpose of averaging) would you like to split the data? "))
 
     trajectory = ase.io.read(filename, ":")
@@ -110,7 +128,7 @@ if task.startswith("d"):
 
 elif task.startswith("r"):
     # rdf
-
+    print("To be implemented soon!")
 else:
     # not a valid option
     raise InputError("Task", "You have specified a non-implemented task. Currently supported: [d]iffusion, [r]df.")
