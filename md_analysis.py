@@ -43,11 +43,8 @@ def build_reduced_xyz_file(fileroot, first_atom, last_atom):
         # first line of a new frame - number of atoms - replace this with the new number
         reduced_file.write("{}\n".format(num_atoms_output))
 
-        # write comment/header line
-        reduced_file.write("Lattice=' '\n")
-
-        # read past the line giving the geometry - it will now be wrong and ASE can work out the actual geometry from the atom positions
-        input_file.readline()
+        # directly write the line relating to the lattice to the new file - it will now be wrong, but for the calculation of the diffusion coefficient at least, this should not matter
+        reduced_file.write(input_file.readline())
 
         # reset counter
         atom_counter = 0
@@ -68,6 +65,13 @@ def build_reduced_xyz_file(fileroot, first_atom, last_atom):
 
 # user_defined input
 input_filename = input("What is the name of the trajectory file? ")
+
+# check if the input file exists
+ls = os.listdir()
+
+if not input_filename in ls:
+    raise InputError("Unable to read input file", "There is no file named {} in the current directory.".format(input_filename))
+
 
 fileroot = input_filename.rstrip("e").replace(".xyz", "")
 
@@ -91,15 +95,16 @@ if coexistence:
     first_atom = int(input("What is the first atom you want to include in the calculation? "))
     last_atom = int(input("What is the last atom you want to include in the calculation? "))
 
-
-    filename = reduced_filename
-else:
-    filename = input_filename
-
 task = input("What task would you like to carry out? [diffusion, rdf] ").lower()
 
 if task.startswith("d"):
     # diffusion coefficient
+
+    if coexistence:
+        filename = build_reduced_xyz_file(fileroot, first_atom, last_atom)
+    else:
+        filename = input_filename
+
     time_step = float(input("What was the time step between images in {}? [fs] ".format(filename)))
     num_segments = int(input("Into how many segments (for the purpose of averaging) would you like to split the data? "))
 
@@ -107,11 +112,11 @@ if task.startswith("d"):
 
     diffusion_coefficient_object = ase.md.analysis.DiffusionCoefficient(trajectory, timestep=time_step*ase.units.fs)
 
-    diffusion_coefficient_object.calculate(ignore_n_images=ignore_images,number_of_segments=num_segments)[0]
+    diffusion_coefficient_object.calculate(ignore_n_images=ignore_images,number_of_segments=num_segments)
 
     # the diffusion coefficients are output for each atom, "in alphabetical order"
     # this order is the same as that returned by diffusion_coefficient_object.types_of_atoms
-    diffusion_coefficienta, standard_deviations = diffusion_coefficient_object.get_diffusion_coefficients()
+    diffusion_coefficients, standard_deviations = diffusion_coefficient_object.get_diffusion_coefficients()
 
     outfile = open("diffusion_coefficient.txt", "w")
     outfile.write("# Element; Diffusion Coefficient [A**2/fs]; Diffusion Coefficient [cm**2/s]; Standard Deviation [A**2/fs]; Standard Deviation [cm**2/s]\n")
