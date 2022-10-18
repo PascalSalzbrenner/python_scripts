@@ -125,7 +125,7 @@ if task.startswith("d"):
         diffusion_coefficient = diffusion_coefficients[i]*ase.units.fs
         standard_deviation = standard_deviations[i]*ase.units.fs
 
-        outfile.write("{} {} {} {} {}\n".format(diffusion_coefficient_object.types_of_atoms[i], diffusion_coefficient, diffusion_coefficient/10, standard_deviation, standard_deviation/10))
+        outfile.write("{: <5} {: <10.6f} {: <10.6f} {: <10.6f} {: <10.6f}\n".format(diffusion_coefficient_object.types_of_atoms[i], diffusion_coefficient, diffusion_coefficient/10, standard_deviation, standard_deviation/10))
 
     outfile.close()
 
