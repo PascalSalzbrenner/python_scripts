@@ -114,6 +114,9 @@ if task.startswith("d"):
 
     diffusion_coefficient_object.calculate(ignore_n_images=ignore_images,number_of_segments=num_segments)
 
+    # get number of elements
+    num_elements = len(diffusion_coefficient_object.types_of_atoms)
+
     # the diffusion coefficients are output for each atom, "in alphabetical order"
     # this order is the same as that returned by diffusion_coefficient_object.types_of_atoms
     diffusion_coefficients, standard_deviations = diffusion_coefficient_object.get_diffusion_coefficients()
@@ -121,7 +124,7 @@ if task.startswith("d"):
     outfile = open("diffusion_coefficient.txt", "w")
     outfile.write("# Element; Diffusion Coefficient [A**2/fs]; Diffusion Coefficient [cm**2/s]; Standard Deviation [A**2/fs]; Standard Deviation [cm**2/s]\n")
 
-    for i in range(len(diffusion_coefficient_object.types_of_atoms)):
+    for i in range(num_elements):
         diffusion_coefficient = diffusion_coefficients[i]*ase.units.fs
         standard_deviation = standard_deviations[i]*ase.units.fs
 
@@ -129,7 +132,32 @@ if task.startswith("d"):
 
     outfile.close()
 
+    # plot using ASE built-in plotting utility
+    axes = plt.gca()
+    diffusion_coefficient_object.plot(ax=axes)
+    plt.savefig("diffusion_coefficient.pdf")
 
+    # the data for the average diffusion coefficient can be read out from the axes.lines objects
+    # specifically, there are num_segments * (num_elements + 1) entries, where for each segment the last entry corresponds to a straight line separating different segments
+
+    for i in range(num_elements):
+        # open a file for each element, where the x-y data for all segments are written, with different segments separated by a blank line
+
+        element_name = diffusion_coefficient_object.types_of_atoms[i]
+
+        outfile = open("{}_MSD_data.dat".format(element_name), "w")
+        outfile.write("# Time [fs]; MSD [A**2]\n")
+
+
+        for j in range(num_segments):
+            x_data, y_data = axes.lines[i+j*(num_elements+1)].get_data()
+
+            for k in range(len(x_data)):
+                outfile.write("{: <10.6f} {: <10.6f}\n".format(x_data[k], y_data[k]))
+
+            outfile.write("\n")
+
+        outfile.close()
 
 elif task.startswith("r"):
     # rdf
