@@ -5,8 +5,9 @@
 
 import os
 import shutil
-import ase, ase.io, ase.md.analysis
+import ase, ase.io, ase.geometry.analysis, ase.md.analysis
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 from exceptions import InputError
@@ -161,7 +162,99 @@ if task.startswith("d"):
 
 elif task.startswith("r"):
     # rdf
-    print("To be implemented soon!")
+
+    # the calculated rdf is an average, but we also print out snapshots in case there is a phase transition
+
+    # read trajectory and generate analysis class
+
+    trajectory = ase.io.read(input_filename, index="{}:".format(ignore_images))
+    geometry = ase.geometry.analysis.Analysis(trajectory)
+
+    rmax = float(input("What is the maximum distance at which you want to compute the RDF? "))
+    nbins = int(input("Into how many bins would you like to divide the RDF? "))
+
+    # generate x range
+    x_step = rmax / nbins
+    x_min = x_step / 2
+
+    x_values = []
+
+    for i in range(nbins):
+        x_values.append(x_min + x_step*i)
+
+    final_image = input("Up to which image would you like to calculate the RDF? (leave blank for all images) ")
+
+    if not final_image:
+        final_image = geometry.nImages
+    else:
+        final_image = int(final_image)
+
+    # because we are only reading from ignore_images, the image indices are renumbered. We subtract that number from the user-supplied final_image, which will reference the full trajectory
+    final_image -= ignore_images
+
+    image_slice = slice(0, final_image)
+
+    snapshot_step = int(input("At which frequency would you like to print snapshots of the RDF? "))
+
+    # it is possible to specify "elements" which are included in the RDF - these can be either a range of atoms, or a set of actual chemical elements, but not a combination of both
+    element_list = []
+
+    if not coexistence:
+        # if it is a coexistence calculation, the user will have specified a range of atoms, so they can't also specify a set of chemical elements
+        element = input("We will now compile a list of elements you want to include in the RDF calculation. Once you have supplied all desired elements, press 'enter' without supplying another element. If you want to include all elements, press 'enter' now: ")
+
+        while element:
+            element_list.append(element)
+            element = input("Please enter the next element: ")
+
+        if not element_list:
+            # the element_list is empty, set it to all elements
+            element_list = list(set(trajectory[0].get_chemical_symbols()))
+
+    else:
+        # in this case, we create a list including only the atoms in the range specified by first_atom, last_atom
+
+        for i in range(first_atom-1, last_atom):
+            element_list.append(i)
+
+    # actually calculate the RDF - calculates one RDF per included image
+    rdf = geometry.get_rdf(rmax,nbins,imageIdx = image_slice, elements=element_list)
+
+    average_rdf = np.mean(rdf,axis=0)
+
+    # write output
+    datafile = open("average_rdf_{}_{}_images.dat".format(ignore_images, final_image + ignore_images), "w")
+    
+    datafile.write("# bin centre [A]; RDF\n")
+
+    for i in range(len(average_rdf)):
+        datafile.write("{} {}\n".format(x_values[i], average_rdf[i]))
+
+    datafile.close()
+
+    with open("average_rdf_{}_{}_images.gnu".format(ignore_images+1, final_image + ignore_images+1), "w") as plotfile:
+
+        plotfile.write("set terminal postscript eps colour font 'Helvectica,20'\n")
+        plotfile.write("set output '| epstopdf --filter --outfile=average_rdf_{}_{}_images.pdf'\n".format(ignore_images+1, final_image + ignore_images+1))
+        plotfile.write("set mxtics 2\n")
+        plotfile.write("set mytics 2\n")
+        plotfile.write("set boxwidth {}\n".format(x_step))
+        plotfile.write("set style fill solid\n")
+        plotfile.write("set xlabel '|r| [A]'\n")
+        plotfile.write("set ylabel 'g(r)'\n")
+        plotfile.write("set xrange [0:{}]\n".format(rmax))
+        plotfile.write("set yrange [0:]\n")
+        plotfile.write("plot 'average_rdf_{}_{}_images.dat' u 1:2 w boxes lc rgb '#DC143C' notitle".format(ignore_images+1, final_image + ignore_images+1))
+
+    # use matplotlib to generate some quick plots of the snapshots - not super nice-looking as they are intended for checking purposes only
+
+    for i in range(0, len(rdf), snapshot_step):
+        plt.plot(x_values, rdf[i])
+        plt.xlabel("|r| [A]")
+        plt.ylabel("g(r)")
+        plt.savefig("rdf_snapshot_{}.pdf".format(ignore_images+i+1))
+        plt.clf()
+    
 else:
     # not a valid option
     raise InputError("Task", "You have specified a non-implemented task. Currently supported: [d]iffusion, [r]df.")
