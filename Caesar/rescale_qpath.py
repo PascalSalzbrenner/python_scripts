@@ -20,13 +20,13 @@ def clean_up_list_string(list_string):
 
 
 
-calculation_1 = input("What is the directory of the first calculation? ").rstrip("/")
-calculation_2 = input("What is the directory of the second calculation? ").rstrip("/")
+calculation_1 = input("What is the directory of the first results? ").rstrip("/")
+calculation_2 = input("What is the directory of the second results? ").rstrip("/")
 units = input("What units are the input dispersions in? ")
 
 # determine where the HSPs are in the two different calculations
-hsp_file_1 = open("{}/lte/phonon_dispersion.gnu".format(calculation_1), "r")
-hsp_file_2 = open("{}/lte/phonon_dispersion.gnu".format(calculation_2), "r")
+hsp_file_1 = open("{}/phonon_dispersion.gnu".format(calculation_1), "r")
+hsp_file_2 = open("{}/phonon_dispersion.gnu".format(calculation_2), "r")
 
 hsp_list_1 = []
 hsp_list_2 = []
@@ -69,8 +69,8 @@ else:
     longer_list = hsp_list_2
     shorter_list = hsp_list_1
 
-rescale_file = open("{}/lte/phonon_dispersion_curve_{}.dat".format(rescale_calc, units), "r")
-rescale_outfile = open("{}/lte/phonon_dispersion_curve_{}_rescaled.dat".format(rescale_calc, units), "w")
+rescale_file = open("{}/phonon_dispersion_curve_{}.dat".format(rescale_calc, units), "r")
+rescale_outfile = open("{}/phonon_dispersion_curve_{}_rescaled.dat".format(rescale_calc, units), "w")
 
 # count how many HSPs we have come past
 hsp_counter=1
