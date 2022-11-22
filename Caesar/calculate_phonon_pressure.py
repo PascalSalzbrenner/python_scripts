@@ -48,7 +48,7 @@ ls.sort()
 
 for file in ls:
     if ".res" in file:
-        structure_name = file.split("p0")[1].lstrip("-").rstrip(".res")
+        structure_name = file.split("p0")[1].lstrip("-").replace(".res", "")
 
         if structure_name not in files_dict.keys():
             # this is the first structure with this index, so we have to generate the appropriate list in the dictionary
