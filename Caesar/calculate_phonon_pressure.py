@@ -12,6 +12,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
+from natsort import natsorted
 from numpy.polynomial import Polynomial
 
 ############################################################# input and setup #############################################################
@@ -44,7 +45,7 @@ static_pressures = {}
 
 # determine all files in the directory
 ls = os.listdir()
-ls.sort()
+ls = natsorted(ls)
 
 for file in ls:
     if ".res" in file:
