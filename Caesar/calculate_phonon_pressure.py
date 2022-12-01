@@ -250,7 +250,7 @@ plotfile.write("set linetype 11 lc rgb '#20C2C2'\n")
 plotfile.write("set linetype cycle 11\n")
 
 plotfile.write("set xlabel 'Pressure [GPa]'\n")
-plotfile.write("set ylabel 'Enthalpy [meV/atom]'\n")
+plotfile.write("set ylabel 'Gibbs Free Energy [meV/atom]'\n")
 
 # pick somewhat sensible defaults for the xrange using the fact that the reference structure must span the whole range at the static level
 plotfile.write("set xrange [{}:{}]\n".format(int(static_pressures[reference_structure][0]),
