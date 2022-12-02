@@ -43,12 +43,12 @@ def connect_boundary_list(boundary_list):
         # do first step outside of the loop to set up quantities
         nearest_point_index = 0
         point = np.array(boundary_list[0])
-        distance = numpy.linalg.norm(point-current_point)
+        distance = np.linalg.norm(point-current_point)
         shortest_distance = distance
 
         for j in range(1, len(boundary_list)-1):
             point = np.array(boundary_list[j])
-            distance = numpy.linalg.norm(point-current_point)
+            distance = np.linalg.norm(point-current_point)
 
             if distance < shortest_distance:
                 nearest_point_index = j
