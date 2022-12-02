@@ -201,8 +201,8 @@ for temperature in temp_list:
         energies = np.array(energies)
         minimum_energy_index = np.argmin(energies)
 
-        phase_diagram_data.append([pressure,temperature,minimum_energy_index,structure_list[minimum_energy_index]])
-        pd_data_file.write("{} {} {}\n".format(pressure, temperature, structure_list[minimum_energy_index]))
+        phase_diagram_data.append([initial_pressure_copy,temperature,minimum_energy_index,structure_list[minimum_energy_index]])
+        pd_data_file.write("{} {} {}\n".format(initial_pressure_copy, temperature, structure_list[minimum_energy_index]))
 
         initial_pressure_copy += pressure_increment
 
