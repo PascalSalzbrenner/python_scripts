@@ -281,9 +281,9 @@ pt_points_file.close()
 for index_str, pt_line in phase_transition_points:
 
     x, y = zip(*pt_line)
-    plt.plot(x, y, label=index_str)
-
-plt.legend()
+    plt.plot(x, y, label=index_str,fmt="#000080")
+    plt.text([x-1], y[-1], index_str)
+    
 plt.savefig("phase_diagram_boundaries_only.pdf")
 
 
