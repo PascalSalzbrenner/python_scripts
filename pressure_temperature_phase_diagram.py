@@ -242,11 +242,11 @@ for point in phase_diagram_data[1:]:
             index_str="{}-{}".format(min(lowest_pressure_prev_temp_mindex, mindex), max(lowest_pressure_prev_temp_mindex,mindex))
 
             if index_str not in phase_transition_points.keys():
-                phase_transition_points[index_str] = [pressure, (temperature+previous_temperature)/2]
+                phase_transition_points[index_str] = [pressure, (float(temperature)+float(previous_temperature))/2]
             else:
-                phase_transition_points[index_str].append([pressure, (temperature+previous_temperature)/2])
+                phase_transition_points[index_str].append([pressure, (float(temperature)+float(previous_temperature))/2])
 
-            pt_points_file.write("{} {} {}\n".format(index_str, pressure, (temperature+previous_temperature)/2))
+            pt_points_file.write("{} {} {}\n".format(index_str, pressure, (float(temperature)+float(previous_temperature))/2))
 
         previous_pressure = pressure
         previous_temperature = temperature
@@ -262,11 +262,11 @@ for point in phase_diagram_data[1:]:
         index_str="{}-{}".format(min(previous_mindex, mindex), max(previous_mindex,mindex))
 
         if index_str not in phase_transition_points.keys():
-            phase_transition_points[index_str] = [(pressure+previous_pressure)/2, temperature]
+            phase_transition_points[index_str] = [(pressure+previous_pressure)/2, float(temperature)]
         else:
-            phase_transition_points[index_str].append([(pressure+previous_pressure)/2, temperature])
+            phase_transition_points[index_str].append([(pressure+previous_pressure)/2, float(temperature)])
 
-        pt_points_file.write("{} {} {}\n".format(index_str, (pressure+previous_pressure)/2, temperature))
+        pt_points_file.write("{} {} {}\n".format(index_str, (pressure+previous_pressure)/2, float(temperature)))
 
     previous_pressure = pressure
     previous_temperature = temperature
