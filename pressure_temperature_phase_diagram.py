@@ -21,9 +21,10 @@ from numpy.polynomial import Polynomial
 
 ############################################################ helper functions ############################################################
 
-def connect_boundary_list(boundary_list):
+def connect_boundary_list(boundary_list, t_step):
     """Function that takes a list of points indicating the boundary between two phases and reshapes it so as to draw a connected boundary
        :param list boundary_list: a list of [pressure, temperature] points
+       :param float t_step: the difference between temperatures in the input data
 
        :returns list connected_boundary_list: a list of [pressure, temperature] points, sorted to create a connected boundary
     """
@@ -40,19 +41,24 @@ def connect_boundary_list(boundary_list):
 
         current_point = np.array(connected_boundary_list[-1])
 
-        # do first step outside of the loop to set up quantities
-        nearest_point_index = 0
-        point = np.array(boundary_list[0])
-        distance = np.linalg.norm(point-current_point)
-        shortest_distance = distance
+        # set up the shortest distance to a large number so that the first attempt is guaranteed a hit
+        shortest_distance = 100000
 
         for j in range(1, len(boundary_list)-1):
-            point = np.array(boundary_list[j])
-            distance = np.linalg.norm(point-current_point)
 
-            if distance < shortest_distance:
-                nearest_point_index = j
-                shortest_distance = distance
+            point = np.array(boundary_list[j])
+
+            # naively, or generally, we would like to find the absolute closest point, but this doesn't work when temperature is on a
+            # much sparser scale than pressure - so instead we artifically restrict it to points neighbouring in temperature and take the one
+            # with the closest pressure
+
+            if np.abs(point[1]-current_point[1]) < (t_step+1):
+
+                distance = np.abs(point[0]-current_point[0])
+
+                if distance < shortest_distance:
+                    nearest_point_index = j
+                    shortest_distance = distance
 
         connected_boundary_list.append(boundary_list.pop(nearest_point_index))
 
@@ -81,6 +87,9 @@ temp_list = []
 ls_top = os.listdir()
 ls_top = natsorted(ls_top)
 temp_dirs = [temp_dir for temp_dir in ls_top if "temp_" in temp_dir]
+
+# work out temperature step for phase boundary list sorting
+t_step = float(temp_dirs[1].split("_")[1]) - float(temp_dirs[0].split("_")[1])
 
 for temp_dir in temp_dirs:
 
@@ -320,7 +329,10 @@ pt_points_file.close()
 
 for index_str, pt_line in phase_transition_points.items():
 
-    x, y = zip(*connect_boundary_list(pt_line))
+    pt_list_connected = connect_boundary_list(pt_line, t_step)
+    print(pt_list_connected)
+
+    x, y = zip(*pt_list_connected)
     plt.plot(x, y, "#000080", label=index_str)
     plt.text(x[-1], y[-1], index_str)
 
