@@ -57,7 +57,7 @@ for temp_dir in temp_dirs:
     static_pressures = {}
 
     temperature = temp_dir.split("_")[1]
-    temp_list.apppend(temperature)
+    temp_list.append(temperature)
 
     # determine all files in the directory
     ls = os.listdir(temp_dir)
