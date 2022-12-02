@@ -262,7 +262,7 @@ for point in phase_diagram_data[1:]:
         index_str="{}-{}".format(min(previous_mindex, mindex), max(previous_mindex,mindex))
 
         if index_str not in phase_transition_points.keys():
-            phase_transition_points[index_str] = [(pressure+previous_pressure)/2, float(temperature)]
+            phase_transition_points[index_str] = [[(pressure+previous_pressure)/2, float(temperature)]]
         else:
             phase_transition_points[index_str].append([(pressure+previous_pressure)/2, float(temperature)])
 
@@ -279,6 +279,8 @@ pt_points_file.close()
 # plot with just the lines
 
 for index_str, pt_line in phase_transition_points.items():
+
+    print(pt_line)
 
     x, y = zip(*pt_line)
     plt.plot(x, y, label=index_str,fmt="#000080")
