@@ -44,13 +44,15 @@ def connect_boundary_list(boundary_list, t_step):
         # set up the shortest distance to a large number so that the first attempt is guaranteed a hit
         shortest_distance = 100000
 
-        for j in range(1, len(boundary_list)-1):
+        for j in range(len(boundary_list)):
 
             point = np.array(boundary_list[j])
 
             # naively, or generally, we would like to find the absolute closest point, but this doesn't work when temperature is on a
             # much sparser scale than pressure - so instead we artifically restrict it to points neighbouring in temperature and take the one
             # with the closest pressure
+
+            # also, to be fair, we do want to connect to a point adjacent in temperature
 
             if np.abs(point[1]-current_point[1]) < (t_step+1):
 
