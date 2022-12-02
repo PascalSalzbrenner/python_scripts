@@ -283,7 +283,7 @@ for index_str, pt_line in phase_transition_points.items():
     print(pt_line)
 
     x, y = zip(*pt_line)
-    plt.plot(x, y, label=index_str,fmt="#000080")
+    plt.plot(x, y, "#000080", label=index_str)
     plt.text([x-1], y[-1], index_str)
 
 plt.savefig("phase_diagram_boundaries_only.pdf")
