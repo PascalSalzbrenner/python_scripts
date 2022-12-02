@@ -278,7 +278,7 @@ pt_points_file.close()
 
 # plot with just the lines
 
-for index_str, pt_line in phase_transition_points:
+for index_str, pt_line in phase_transition_points.items():
 
     x, y = zip(*pt_line)
     plt.plot(x, y, label=index_str,fmt="#000080")
