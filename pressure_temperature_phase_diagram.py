@@ -196,7 +196,7 @@ for temperature in temp_list:
         energies = []
 
         for structure in struc_temp_pressure_energies.keys():
-            energies.apppend(struc_temp_pressure_energies[structure][temperature](initial_pressure_copy))
+            energies.append(struc_temp_pressure_energies[structure][temperature](initial_pressure_copy))
 
         energies = np.array(energies)
         minimum_energy_index = np.argmin(energies)
