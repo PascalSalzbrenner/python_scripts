@@ -330,13 +330,10 @@ pt_points_file.close()
 # plot with just the lines
 
 for index_str, pt_line in phase_transition_points.items():
-
-    pt_list_connected = connect_boundary_list(pt_line, t_step)
-    print(pt_list_connected)
-
-    x, y = zip(*pt_list_connected)
-    plt.plot(x, y, "#000080", label=index_str)
-    plt.text(x[-1], y[-1], index_str)
+    
+    x, y = zip(*connect_boundary_list(pt_line, t_step))
+    plt.plot(x, y, "#000080")
+    plt.text(x[0], y[0], index_str)
 
 plt.savefig("phase_diagram_boundaries_only.pdf")
 
