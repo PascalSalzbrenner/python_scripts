@@ -19,6 +19,46 @@ from scipy import interpolate
 from natsort import natsorted
 from numpy.polynomial import Polynomial
 
+############################################################ helper functions ############################################################
+
+def connect_boundary_list(boundary_list):
+    """Function that takes a list of points indicating the boundary between two phases and reshapes it so as to draw a connected boundary
+       :param list boundary_list: a list of [pressure, temperature] points
+
+       :returns list connected_boundary_list: a list of [pressure, temperature] points, sorted to create a connected boundary
+    """
+
+    # sort by termperature
+    boundary_list.sort(key = lambda x: x[1])
+
+    # move the first element from the input to the output list
+    connected_boundary_list = [boundary_list.pop(0)]
+
+    # the way this will work is we always find the element closest to the already existing element by iterating over the entire list
+    # not particularly elegant but it should work - I can't think of a situation where this is not the connectivity we want
+    for i in range(len(boundary_list)):
+
+        current_point = np.array(connected_boundary_list[-1])
+
+        # do first step outside of the loop to set up quantities
+        nearest_point_index = 0
+        point = np.array(boundary_list[0])
+        distance = numpy.linalg.norm(point-current_point)
+        shortest_distance = distance
+
+        for j in range(1, len(boundary_list)-1):
+            point = np.array(boundary_list[j])
+            distance = numpy.linalg.norm(point-current_point)
+
+            if distance < shortest_distance:
+                nearest_point_index = j
+                shortest_distance = distance
+
+        connected_boundary_list.append(boundary_list.pop(j))
+
+    return connected_boundary_list
+
+
 ############################################################# input and setup #############################################################
 
 # define pressure conversion factor from eV/A**3 to GPa
@@ -280,11 +320,9 @@ pt_points_file.close()
 
 for index_str, pt_line in phase_transition_points.items():
 
-    print(pt_line)
-
     x, y = zip(*pt_line)
     plt.plot(x, y, "#000080", label=index_str)
-    plt.text([x-1], y[-1], index_str)
+    plt.text(x[-1], y[-1], index_str)
 
 plt.savefig("phase_diagram_boundaries_only.pdf")
 
