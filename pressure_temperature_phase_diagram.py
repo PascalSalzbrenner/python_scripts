@@ -39,7 +39,7 @@ temp_list = []
 ################################################### reading pressure-volume-energy data ###################################################
 
 ls_top = os.listdir()
-ls_top = natsorted(ls)
+ls_top = natsorted(ls_top)
 temp_dirs = [temp_dir for temp_dir in ls_top if "temp_" in temp_dir]
 
 for temp_dir in temp_dirs:
@@ -283,7 +283,7 @@ for index_str, pt_line in phase_transition_points:
     x, y = zip(*pt_line)
     plt.plot(x, y, label=index_str,fmt="#000080")
     plt.text([x-1], y[-1], index_str)
-    
+
 plt.savefig("phase_diagram_boundaries_only.pdf")
 
 
