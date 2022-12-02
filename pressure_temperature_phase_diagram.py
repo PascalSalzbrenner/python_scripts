@@ -174,7 +174,7 @@ for temp_dir in temp_dirs:
             struc_temp_pressure_energies[structure] = {temperature: pressure_energy_fit}
         else:
             # not the first temperature for this structure
-            struc_temp_pressure_energies[structure].append({temperature: pressure_energy_fit})
+            struc_temp_pressure_energies[structure][temperature] = pressure_energy_fit
 
 ####################################################### generation of phase diagram #######################################################
 
