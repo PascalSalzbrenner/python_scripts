@@ -84,7 +84,7 @@ for temp_dir in temp_dirs:
 
         for file in structure_files:
 
-            data_file = open(file, "r")
+            data_file = open("{}/{}".format(temp_dir, file), "r")
 
             # this is the AIRSS .res file format
             # the pressure [GPa], volume [Ang**3], and energy [eV] are the third, fourth, and fifth elements of the first line respectively
