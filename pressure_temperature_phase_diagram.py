@@ -54,7 +54,7 @@ def connect_boundary_list(boundary_list):
                 nearest_point_index = j
                 shortest_distance = distance
 
-        connected_boundary_list.append(boundary_list.pop(j))
+        connected_boundary_list.append(boundary_list.pop(nearest_point_index))
 
     return connected_boundary_list
 
