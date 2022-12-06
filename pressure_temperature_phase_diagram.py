@@ -278,6 +278,11 @@ previous_mindex = phase_diagram_data[0][2]
 lowest_pressure_prev_temp = previous_pressure
 lowest_pressure_prev_temp_mindex = previous_mindex
 
+# write out list of structures
+with open("structures_indices.dat", "w") as index_file:
+    for i in range(len(structure_list)):
+        index_file.write("{}: {}\n".format(i, structure_list[i]))
+
 for point in phase_diagram_data[1:]:
 
     pressure = point[0]
