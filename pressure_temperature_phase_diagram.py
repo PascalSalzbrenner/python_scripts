@@ -66,9 +66,47 @@ def connect_boundary_list(boundary_list, t_step):
 
     return connected_boundary_list
 
+def round_to_nearest_larger_five(number):
+    """Function to round to the largest number divisible by 5*10^(num_digits-2) - eg 17.3 would be rounded to 20, 1167 to 1500, etc
+       # will break if the number is smaller than 0, but at least for the application here this shouldn't occur
+       :param float number: number to be rounded
+
+       :returns int rounded_number: rounded number"""
+
+    # convert number to string for a variety of useful operations
+    str_number = str(number)
+
+    # find the parts we do and don't round
+    rounded_part = float(str_number[1:])
+    str_rounded_part = str(rounded_part)
+    not_rounded_remainder = int(number - rounded_part)
+
+    # find the number of digits before the comma for the rounded part
+    # also handle it if the rounded_part is smaller than 1
+
+    if rounded_part >= 1:
+        num_digits = len(str_rounded_part.split(".")[0])
+    elif not_rounded_remainder > 0:
+        # if not_rounded_remainder is an integer > 0, we always want to round to tenths
+        num_digits = 0
+    else:
+        # the number of digits behind the comma corresponding to the first non-zero value is equal to the length before the comma of 1/rounded_part
+        num_digits = 1 - len(str(int(1/rounded_part)))
+    # find the multiple of 5 we round to
+    multiple_of_five = 5*(10**(num_digits-1))
+
+    # if this is smaller than the part we want to round, then we multiply by 2
+    # ie we always want to round up, and the next-largest number divisible by the multiple of 5 is twice it
+    # eg, if we have 1167, we want to round to 1500, but if we have 1667, we want to round to 2000
+    if multiple_of_five < rounded_part:
+        multiple_of_five *= 2
+
+    # put the two parts together
+    rounded_number = not_rounded_remainder + multiple_of_five
+
+    return rounded_number
 
 ############################################################# input and setup #############################################################
-
 # define pressure conversion factor from eV/A**3 to GPa
 pressure_conversion = 160.21766208
 
@@ -334,16 +372,37 @@ pt_points_file.close()
 
 # plot with just the lines
 
+plt.xlabel("Pressure [GPa]")
+plt.ylabel("Temperature [K]")
+
+# determine maximum temperature and pressure to set nice upper boundaries for the plot
+# set low starting values
+max_press = 0
+max_temp = 0
+
 for index_str, pt_line in phase_transition_points.items():
-    
+
+    # check if we have found new maximum values
+    current_max = np.amax(pt_line, axis=0)
+    current_max_press = current_max[0]
+    current_max_temp = current_max[1]
+
+    if current_max_press > max_press:
+        max_press = current_max_press
+    if current_max_temp > max_temp:
+        max_temp = current_max_temp
+
     x, y = zip(*connect_boundary_list(pt_line, t_step))
+
     plt.plot(x, y, "#000080")
     plt.text(x[0], y[0], index_str)
 
+# set plot parameters
+plt.xlim(0, round_to_nearest_larger_five(max_press))
+plt.ylim(0, round_to_nearest_larger_five(max_temp))
+
 plt.savefig("phase_diagram_boundaries_only.pdf")
 
-
-
-
+# plot with regions coloured according to different structures
 
 
