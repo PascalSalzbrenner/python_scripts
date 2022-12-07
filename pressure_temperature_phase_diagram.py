@@ -316,10 +316,19 @@ previous_mindex = phase_diagram_data[0][2]
 lowest_pressure_prev_temp = previous_pressure
 lowest_pressure_prev_temp_mindex = previous_mindex
 
-# write out list of structures
-with open("structures_indices.dat", "w") as index_file:
-    for i in range(len(structure_list)):
-        index_file.write("{}: {}\n".format(i, structure_list[i]))
+# write out list of structures if it does not exist yet - if it does exist, we use it as an input for naming the structures
+
+if not "structures_indices.dat" in os.listdir():
+    with open("structures_indices.dat", "w") as index_file:
+        for i in range(len(structure_list)):
+            index_file.write("{}: {}\n".format(i, structure_list[i]))
+else:
+    with open("structures_indices.dat", "r") as index_file:
+        for line in index_file:
+            contents = line.split()
+            index = int(contents[0].rstrip(":"))
+            structure_name = contents[1]
+            structure_list[index] = structure_name
 
 for point in phase_diagram_data[1:]:
 
@@ -333,7 +342,7 @@ for point in phase_diagram_data[1:]:
 
         if mindex != lowest_pressure_prev_temp_mindex:
             # temperature has caused a phase transition here - we place it halfway between the two temperatures
-            index_str="{}-{}".format(min(lowest_pressure_prev_temp_mindex, mindex), max(lowest_pressure_prev_temp_mindex,mindex))
+            index_str="{}-{}".format(structure_list[min(lowest_pressure_prev_temp_mindex, mindex)], structure_list[max(lowest_pressure_prev_temp_mindex,mindex)])
 
             if index_str not in phase_transition_points.keys():
                 phase_transition_points[index_str] = [pressure, (float(temperature)+float(previous_temperature))/2]
@@ -353,7 +362,7 @@ for point in phase_diagram_data[1:]:
 
     if mindex != previous_mindex:
         # phase transition point
-        index_str="{}-{}".format(min(previous_mindex, mindex), max(previous_mindex,mindex))
+        index_str="{}-{}".format(structure_list[min(previous_mindex, mindex)], structure_list[max(previous_mindex,mindex)])
 
         if index_str not in phase_transition_points.keys():
             phase_transition_points[index_str] = [[(pressure+previous_pressure)/2, float(temperature)]]
@@ -404,5 +413,6 @@ plt.ylim(0, round_to_nearest_larger_five(max_temp))
 plt.savefig("phase_diagram_boundaries_only.pdf")
 
 # plot with regions coloured according to different structures
+
 
 
