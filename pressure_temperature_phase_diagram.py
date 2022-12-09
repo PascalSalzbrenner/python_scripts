@@ -148,9 +148,7 @@ for temp_dir in temp_dirs:
 
             if structure_name not in files_dict.keys():
                 # this is the first structure with this index, so we have to generate the appropriate list in the dictionary
-                # as well as the appropriate dictionary in the input data dictionary
                 files_dict[structure_name] = [file]
-                struc_temp_input_data[structure_name] = {}
             else:
                 # the appropriate list already exists
                 files_dict[structure_name].append(file)
@@ -158,6 +156,10 @@ for temp_dir in temp_dirs:
     # iterate over and read all files for each structure
 
     for structure, structure_files in files_dict.items():
+
+        # check if the structure is already in the input dictionary; add it if not
+        if structure not in struc_temp_input_data.keys():
+            struc_temp_input_data[structure] = {}
 
         volumes = []
         energies = []
@@ -184,6 +186,8 @@ for temp_dir in temp_dirs:
         energies = np.flip(np.array(energies))
 
         struc_temp_input_data[structure][temperature] = [volumes[:], energies[:], static_pressures[:]]
+
+print(struc_temp_input_data)
 
 ############################ interpolate the temperature-free energy curves for every volume with a polynomial ############################
 
