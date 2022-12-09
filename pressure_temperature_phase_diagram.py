@@ -3,7 +3,7 @@
 # when calculating the contribution nuclear vibrations make to the energy, we must also take into account that the pressure is changed
 # compared to the static lattice calculations by the vibrational contribution
 
-# this is done by noting the P = -dE/dV
+# this is done by noting that P = -dE/dV
 # so the pressure is found by fitting a polynomial to the energy-volume curve, where the energy includes the ZPE
 # the derivatives at the different volumes where we have explicit calculations are then easily found
 
@@ -15,6 +15,7 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from copy import deepcopy
 from scipy import interpolate
 from natsort import natsorted
 from numpy.polynomial import Polynomial
@@ -113,23 +114,19 @@ pressure_conversion = 160.21766208
 # hardcode polynomial rank, but can be easily changed here
 rank = 5
 
-# hardcode step size for writing out the pressure-volume data, can again be changed easily here
+# hardcode step size for writing out the pressure-volume data as well as temperatures, can again be changed easily here
 pressure_increment = 0.01
+t_step = 0.1
 
-# dictionary to contain the temperature - pressure - energy data for each structure
-struc_temp_pressure_energies = {}
-
-# list of temperatures
-temp_list = []
+# dictionaries to contain the temperature - pressure / volume - energy data for each structure, input as well as output
+struc_temp_input_data = {}
+struc_temp_pressure_energy_fits = {}
 
 ################################################### reading pressure-volume-energy data ###################################################
 
 ls_top = os.listdir()
 ls_top = natsorted(ls_top)
 temp_dirs = [temp_dir for temp_dir in ls_top if "temp_" in temp_dir]
-
-# work out temperature step for phase boundary list sorting
-t_step = float(temp_dirs[1].split("_")[1]) - float(temp_dirs[0].split("_")[1])
 
 for temp_dir in temp_dirs:
 
@@ -139,14 +136,7 @@ for temp_dir in temp_dirs:
     # set up dictionary to contain all files associated with each index/structure
     files_dict = {}
 
-    # set up energy and volume dictionaries, as well as one for the static lattice pressure
-    volumes = {}
-    energies = {}
-    full_energies = {}
-    static_pressures = {}
-
     temperature = temp_dir.split("_")[1]
-    temp_list.append(temperature)
 
     # determine all files in the directory
     ls = os.listdir(temp_dir)
@@ -158,7 +148,9 @@ for temp_dir in temp_dirs:
 
             if structure_name not in files_dict.keys():
                 # this is the first structure with this index, so we have to generate the appropriate list in the dictionary
+                # as well as the appropriate dictionary in the input data dictionary
                 files_dict[structure_name] = [file]
+                struc_temp_input_data[structure] = {}
             else:
                 # the appropriate list already exists
                 files_dict[structure_name].append(file)
@@ -167,9 +159,9 @@ for temp_dir in temp_dirs:
 
     for structure, structure_files in files_dict.items():
 
-        volumes[structure] = []
-        energies[structure] = []
-        static_pressures[structure] = []
+        volumes = []
+        energies = []
+        static_pressures = []
 
         for file in structure_files:
 
@@ -178,37 +170,101 @@ for temp_dir in temp_dirs:
             # this is the AIRSS .res file format
             # the pressure [GPa], volume [Ang**3], and energy [eV] are the third, fourth, and fifth elements of the first line respectively
             important_line = data_file.readline().split()
-            static_pressures[structure].append(float(important_line[2]))
-            volumes[structure].append(float(important_line[3]))
+            static_pressures.append(float(important_line[2]))
+            volumes.append(float(important_line[3]))
             # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
-            energies[structure].append(float(important_line[4])-(static_pressures[structure][-1]/pressure_conversion)*volumes[structure][-1])
+            energies.append(float(important_line[4])-(static_pressures[-1]/pressure_conversion)*volumes[-1])
 
             natoms = int(important_line[7])
 
             data_file.close()
 
         # flip the lists as we require the volumes to be sorted from lowest (corresponding to the highest pressure) to highest (vice versa)
-        volumes[structure] = np.flip(np.array(volumes[structure]))
-        energies[structure] = np.flip(np.array(energies[structure]))
+        volumes = np.flip(np.array(volumes))
+        energies = np.flip(np.array(energies))
+
+        struc_temp_input_data[structure][temperature] = [volumes[:], energies[:], static_pressures[:]]
+
+############################ interpolate the temperature-free energy curves for every volume with a polynomial ############################
+
+for structure in struc_temp_input_data.keys():
+
+    temperatures = []
+    energies = []
+    fits = []
+
+    for temperature in struc_temp_input_data[structure].keys():
+        temperatures.append(float(temperature))
+
+        # note that energies is itself a list, so for every temperature we have several energy values corresponding to the different energies
+        # we do one fit for each entry, the order of the fits corresponds to that of the volumes
+        energies.append(struc_temp_input_data[structure][temperature][1])
+
+    energies = np.array(energies)
+
+    # the volumes and static pressures will be the same for every temperature - here we read them out for later use
+    volumes = struc_temp_input_data[structure][temperatures[0]][0]
+    static_pressures = struc_temp_input_data[structure][temperatures[0]][2]
+
+    # do the fits
+    for i in range(len(energies[0])):
+        temperature_energy_fit = Polynomial.fit(temperatures, energies[:,i], rank)
+        fits.append(temperature_energy_fit)
+
+        # plot fit to assess its quality
+        temperature_fit_temperatures = np.arange(temperatures[0], temperatures[-1], t_step)
+        temperature_fit_energies = temperature_energy_fit[temperature_fit_temperatures]
+        plt.plot(temperatures, energies[:,i], 'o', temperature_fit_temperatures, temperature_fit_energies, '-')
+        plt.savefig("temperature_energy_fit_volume_{}.pdf".format(volumes[i]))
+
+    # write fits to input dict
+    initial_temperature = temperatures[0]
+    final_temperature = temperatures[-1]
+
+    while initial_temperature < final_temperature:
+
+        # check if we already have an entry for this temperature
+
+        if not np.isclose(initial_temperature, temperatures, atol=t_step/10).any():
+
+            fitted_energies = []
+
+            for fit in fits:
+                fitted_energies.append(fit[initial_temperature])
+
+            struc_temp_input_data[structure][str(initial_temperature)] = [volumes[:], fitted_energies[:], static_pressures[:]]
+
+        initial_temperature += t_step
 
 ########################################### fitting the polynomial and finding the real pressure ###########################################
 
+# set up dictionary to contain output data
+full_energies = {}
+
+for structure in struc_temp_input_data.keys():
+
+    for temperature in struc_temp_input_data[structure].keys():
+
+        volumes = struc_temp_input_data[structure][temperature][0]
+        energies = struc_temp_input_data[structure][temperature][1]
+        static_pressures = struc_temp_input_data[structure][temperature][2]
+
         # use cubic splines with no smoothing to fit to the energy-volume data - gives better precision than polynomial interpolation
-        splines = interpolate.splrep(volumes[structure], energies[structure], s=0)
-        fit_volumes = np.arange(volumes[structure][0], volumes[structure][-1],0.001)
+        splines = interpolate.splrep(volumes, energies, s=0)
+        fit_volumes = np.arange(volumes[0], volumes[-1], 0.001)
         fit_energies = interpolate.splev(fit_volumes, splines, der=0)
 
-        plt.plot(volumes[structure], energies[structure], 'o', fit_volumes, fit_energies, '-')
-        plt.savefig("energy_volume_polynomial_fit_{}.pdf".format(structure))
+        plt.plot(volumes, energies, 'o', fit_volumes, fit_energies, '-')
+        plt.savefig("energy_volume_polynomial_fit_{}_{}_K.pdf".format(structure, temperature))
         plt.close()
 
         # calculate the first derivative of the interpolation to get the pressure
-        pressures = interpolate.splev(volumes[structure], splines, der=1)
+        pressures = interpolate.splev(volumes, splines, der=1)
         pressures = -pressure_conversion*np.array(pressures)
 
         # find the Gibbs energies per atom using the correct pressure - add the PV term back in
         # pressures are currently sorted from highest to lowest - this corresponds to the order of the energies and volumes
-        full_energies[structure] = np.array(energies[structure] + pressures/pressure_conversion * volumes[structure])/natoms
+        full_energies[structure] = np.array(energies + pressures/pressure_conversion * volumes)/natoms
 
         # fit a rank 5 polynomial to the pressure-energy data for interpolation
         pressure_energy_fit = Polynomial.fit(pressures, full_energies[structure], rank)
@@ -216,7 +272,7 @@ for temp_dir in temp_dirs:
         pressure_fit_pressures = np.arange(pressures[-1],pressures[0],0.01)
         pressure_fit_energies = pressure_energy_fit(pressure_fit_pressures)
         plt.plot(pressures, full_energies[structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
-        plt.savefig("pressure_energy_fit_{}.pdf".format(structure))
+        plt.savefig("pressure_energy_fit_{}_{}_K.pdf".format(structure, temperature))
         plt.close()
 
         # at this point we can flip the pressure to the order lowest -> highest for writing out
@@ -229,7 +285,7 @@ for temp_dir in temp_dirs:
         initial_pressure = static_pressures[structure][0]
         final_pressure = static_pressures[structure][-1]
 
-        pressure_energy_file = open("phonon_pressure_energy_{}.dat".format(structure), "w")
+        pressure_energy_file = open("phonon_pressure_energy_{}_{}_K.dat".format(structure, temperature), "w")
 
         pressure_energy_file.write("# Pressure [GPa]; Gibbs Free Energy [meV/atom]\n")
 
@@ -247,7 +303,7 @@ for temp_dir in temp_dirs:
 ######################################### write out the static and corresponding phonon pressures #########################################
 
         # open file to write the old and new pressures to
-        pressure_file = open("static_phonon_pressure_{}.dat".format(structure), "w")
+        pressure_file = open("static_phonon_pressure_{}_{}_K.dat".format(structure, temperature), "w")
         pressure_file.write("# rank of polynomial: {}\n".format(rank))
         pressure_file.write("# static-lattice pressure [GPa]; vibration-corrected pressure [GPa]\n")
 
@@ -259,18 +315,18 @@ for temp_dir in temp_dirs:
         pressure_file.close()
 
         # store pressure_energy_fit
-        if structure not in struc_temp_pressure_energies.keys():
-            struc_temp_pressure_energies[structure] = {temperature: pressure_energy_fit}
+        if structure not in struc_temp_pressure_energy_fits.keys():
+            struc_temp_pressure_energy_fits[structure] = {temperature: pressure_energy_fit}
         else:
             # not the first temperature for this structure
-            struc_temp_pressure_energies[structure][temperature] = pressure_energy_fit
+            struc_temp_pressure_energy_fits[structure][temperature] = pressure_energy_fit
 
 ####################################################### generation of phase diagram #######################################################
 
 # find lowest-energy structure for each temperature-pressure pair, as well as boundary between them
 phase_diagram_data = []
 
-structure_list = list(struc_temp_pressure_energies.keys())
+structure_list = list(struc_temp_pressure_energy_fits.keys())
 
 # write out list of structures if it does not exist yet - if it does exist, we use it as an input for naming the structures
 
@@ -290,7 +346,7 @@ else:
 pd_data_file = open("phase_diagram_data.dat", "w")
 pd_data_file.write("# Pressure [GPa]; Temperature [K]; Ground state structure\n")
 
-for temperature in temp_list:
+for temperature in temp_dict.keys():
 
     initial_pressure_copy = initial_pressure
 
@@ -298,8 +354,8 @@ for temperature in temp_list:
         
         energies = []
 
-        for structure in struc_temp_pressure_energies.keys():
-            energies.append(struc_temp_pressure_energies[structure][temperature](initial_pressure_copy))
+        for structure in struc_temp_pressure_energy_fits.keys():
+            energies.append(struc_temp_pressure_energy_fits[structure][temperature](initial_pressure_copy))
 
         energies = np.array(energies)
         minimum_energy_index = np.argmin(energies)
@@ -381,6 +437,7 @@ pt_points_file.close()
 
 # plot with just the lines
 
+"""
 plt.xlabel("Pressure [GPa]")
 plt.ylabel("Temperature [K]")
 
@@ -401,26 +458,42 @@ for index_str, pt_line in phase_transition_points.items():
     if current_max_temp > max_temp:
         max_temp = current_max_temp
 
-    x, y = zip(*connect_boundary_list(pt_line, t_step))
+    x, y = zip(*connect_boundary_list(deepcopy(pt_line), t_step))
 
     plt.plot(x, y, "#000080")
     plt.text(x[0], y[0], index_str)
 
 # set plot parameters
-plt.xlim(0, round_to_nearest_larger_five(max_press))
-plt.ylim(0, round_to_nearest_larger_five(max_temp))
+x_limits = [0, round_to_nearest_larger_five(max_press)]
+y_limits = [0, round_to_nearest_larger_five(max_temp)]
+
+plt.xlim(x_limits[0], x_limits[1])
+plt.ylim(y_limits[0], y_limits[1])
 
 plt.savefig("phase_diagram_boundaries_only.pdf")
 
+plt.clf()
+
+# define plotting colours
+
+liquid_colour = "#DC143C"
+
+colour_list = ["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02"]
+
 # plot with regions coloured according to different structures
+
 for index_str, pt_line in phase_transition_points.items():
 
     x, y = zip(*connect_boundary_list(pt_line, t_step))
     plt.plot(x, y, "black")
 
 
+    plt.fill_between(x, 0, y, alpha=0.5)
+
+plt.xlim(x_limits[0], x_limits[1])
+plt.ylim(y_limits[0], y_limits[1])
 
 plt.savefig("phase_diagram.pdf")
-
+"""
 
 
