@@ -187,8 +187,6 @@ for temp_dir in temp_dirs:
 
         struc_temp_input_data[structure][temperature] = [volumes[:], energies[:], static_pressures[:]]
 
-print(struc_temp_input_data)
-
 ############################ interpolate the temperature-free energy curves for every volume with a polynomial ############################
 
 for structure in struc_temp_input_data.keys():
@@ -217,7 +215,7 @@ for structure in struc_temp_input_data.keys():
 
         # plot fit to assess its quality
         temperature_fit_temperatures = np.arange(temperatures[0], temperatures[-1], t_step)
-        temperature_fit_energies = temperature_energy_fit[temperature_fit_temperatures]
+        temperature_fit_energies = temperature_energy_fit(temperature_fit_temperatures)
         plt.plot(temperatures, energies[:,i], 'o', temperature_fit_temperatures, temperature_fit_energies, '-')
         plt.savefig("temperature_energy_fit_volume_{}.pdf".format(volumes[i]))
 
@@ -234,7 +232,7 @@ for structure in struc_temp_input_data.keys():
             fitted_energies = []
 
             for fit in fits:
-                fitted_energies.append(fit[initial_temperature])
+                fitted_energies.append(fit(initial_temperature))
 
             struc_temp_input_data[structure][str(initial_temperature)] = [volumes[:], fitted_energies[:], static_pressures[:]]
 
