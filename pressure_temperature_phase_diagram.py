@@ -200,11 +200,11 @@ for structure in struc_temp_input_data.keys():
         # we do one fit for each entry, the order of the fits corresponds to that of the volumes
         energies.append(struc_temp_input_data[structure][temperature][1])
 
-    energies = np.array(energies)
+        # the volumes and static pressures will be the same for every temperature - here we read them out for later use
+        volumes = struc_temp_input_data[structure][temperature][0]
+        static_pressures = struc_temp_input_data[structure][temperature][2]
 
-    # the volumes and static pressures will be the same for every temperature - here we read them out for later use
-    volumes = struc_temp_input_data[structure][temperatures[0]][0]
-    static_pressures = struc_temp_input_data[structure][temperatures[0]][2]
+    energies = np.array(energies)
 
     # do the fits
     for i in range(len(energies[0])):
