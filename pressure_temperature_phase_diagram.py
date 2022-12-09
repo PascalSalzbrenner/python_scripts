@@ -284,8 +284,8 @@ for structure in struc_temp_input_data.keys():
     
         # use the static pressures to delimit the pressure range
 
-        initial_pressure = static_pressures[structure][0]
-        final_pressure = static_pressures[structure][-1]
+        initial_pressure = static_pressures[0]
+        final_pressure = static_pressures[-1]
 
         pressure_energy_file = open("phonon_pressure_energy_{}_{}_K.dat".format(structure, temperature), "w")
 
@@ -300,7 +300,7 @@ for structure in struc_temp_input_data.keys():
 
         # we reset the initial pressure here, so we have access to it when constructing the phase diagram
         # these should be the same for every structure anyways
-        initial_pressure = static_pressures[structure][0]
+        initial_pressure = static_pressures[0]
 
 ######################################### write out the static and corresponding phonon pressures #########################################
 
@@ -312,7 +312,7 @@ for structure in struc_temp_input_data.keys():
         # copy over the files we have operated on, with the correct pressure replacing that of the static lattice
         for i in range(len(structure_files)):
             # the structure_files and pressures lists will be of the same length, and the elements in the same place will correspond to one another
-            pressure_file.write("{} {}\n".format(static_pressures[structure][i], pressures[i]))
+            pressure_file.write("{} {}\n".format(static_pressures[i], pressures[i]))
 
         pressure_file.close()
 
