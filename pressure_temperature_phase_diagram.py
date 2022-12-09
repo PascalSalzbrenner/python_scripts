@@ -150,7 +150,7 @@ for temp_dir in temp_dirs:
                 # this is the first structure with this index, so we have to generate the appropriate list in the dictionary
                 # as well as the appropriate dictionary in the input data dictionary
                 files_dict[structure_name] = [file]
-                struc_temp_input_data[structure] = {}
+                struc_temp_input_data[structure_name] = {}
             else:
                 # the appropriate list already exists
                 files_dict[structure_name].append(file)
