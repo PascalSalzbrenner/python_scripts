@@ -422,7 +422,7 @@ for point in phase_diagram_data[1:]:
             index_str="{}-{}".format(structure_list[min(lowest_pressure_prev_temp_mindex, mindex)], structure_list[max(lowest_pressure_prev_temp_mindex,mindex)])
 
             if index_str not in phase_transition_points.keys():
-                phase_transition_points[index_str] = [pressure, (float(temperature)+float(previous_temperature))/2]
+                phase_transition_points[index_str] = [[pressure, (float(temperature)+float(previous_temperature))/2]]
             else:
                 phase_transition_points[index_str].append([pressure, (float(temperature)+float(previous_temperature))/2])
 
@@ -482,7 +482,7 @@ for point in phase_diagram_data[1:]:
         struc_colour_dict[colour][1].append(point[1])
 
 for colour, points in struc_colour_dict.items():
-    plt.plot(points[0], points[1], c=colour)
+    plt.scatter(points[0], points[1], c=colour)
 
 # plot phase boundaries
 
@@ -492,8 +492,6 @@ max_press = 0
 max_temp = 0
 
 for index_str, pt_line in phase_transition_points.items():
-
-    print(pt_line)
 
     # check if we have found new maximum values
     current_max = np.amax(pt_line, axis=0)
