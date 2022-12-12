@@ -172,12 +172,11 @@ for temp_dir in temp_dirs:
             # this is the AIRSS .res file format
             # the pressure [GPa], volume [Ang**3], and energy [eV] are the third, fourth, and fifth elements of the first line respectively
             important_line = data_file.readline().split()
+            natoms = int(important_line[7])
             static_pressures.append(float(important_line[2]))
             volumes.append(float(important_line[3]))
             # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
-            energies.append(float(important_line[4])-(static_pressures[-1]/pressure_conversion)*volumes[-1])
-
-            natoms = int(important_line[7])
+            energies.append((float(important_line[4])-(static_pressures[-1]/pressure_conversion)*volumes[-1])/natoms)
 
             data_file.close()
 
@@ -273,8 +272,7 @@ for structure in struc_temp_input_data.keys():
 
         # find the Gibbs energies per atom using the correct pressure - add the PV term back in
         # pressures are currently sorted from highest to lowest - this corresponds to the order of the energies and volumes
-        full_energies[structure] = np.array(energies + pressures/pressure_conversion * volumes)/natoms
-
+        full_energies[structure] = np.array(energies + pressures/pressure_conversion * volumes)
         # fit a rank 5 polynomial to the pressure-energy data for interpolation
         pressure_energy_fit = Polynomial.fit(pressures, full_energies[structure], rank)
 
@@ -458,7 +456,69 @@ pt_points_file.close()
 
 ########################################################### plotting #####################################################################
 
-# plot with just the lines
+plt.xlabel("Pressure [GPa]")
+plt.ylabel("Temperature [K]")
+
+# define plotting colours
+
+liquid_colour = "#DC143C"
+
+colour_list = ["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02"]
+
+# plot a dot for every point phase_diagram_data, with the index of the structure in structure_list matched to one in colour_list
+
+# define a colour dictionary which allows us to use the plt.scatter function instead of plotting every point individually
+struc_colour_dict = {}
+
+for point in phase_diagram_data[1:]:
+
+    colour = colour_list[point[2]]
+
+    if colour not in struc_colour_dict.keys():
+        # colour acts here as a proxy for structure
+        struc_colour_dict[colour] = [[point[0]], [point[1]]]
+    else:
+        struc_colour_dict[colour][0].append(point[0])
+        struc_colour_dict[colour][1].append(point[1])
+
+for colour, points in struc_colour_dict.items():
+    plt.plot(points[0], points[1], c=colour)
+
+# plot phase boundaries
+
+# determine maximum temperature and pressure to set nice upper boundaries for the plot
+# set low starting values
+max_press = 0
+max_temp = 0
+
+for index_str, pt_line in phase_transition_points.items():
+
+    print(pt_line)
+
+    # check if we have found new maximum values
+    current_max = np.amax(pt_line, axis=0)
+    current_max_press = current_max[0]
+    current_max_temp = current_max[1]
+
+    if current_max_press > max_press:
+        max_press = current_max_press
+    if current_max_temp > max_temp:
+        max_temp = current_max_temp
+
+    x, y = zip(*connect_boundary_list(deepcopy(pt_line), t_step))
+
+    plt.plot(x, y, "#000080")
+    plt.text(x[0], y[0], index_str)
+
+# set plot parameters
+x_limits = [0, round_to_nearest_larger_five(max_press)]
+y_limits = [0, round_to_nearest_larger_five(max_temp)]
+
+plt.xlim(x_limits[0], x_limits[1])
+plt.ylim(y_limits[0], y_limits[1])
+
+plt.savefig("phase_diagram.pdf")
+plt.close()
 
 """
 plt.xlabel("Pressure [GPa]")
