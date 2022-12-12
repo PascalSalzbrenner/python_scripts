@@ -340,7 +340,7 @@ for structure in struc_temp_input_data.keys():
             # not the first temperature for this structure
             struc_temp_pressure_energy_fits[structure][temperature] = pressure_energy_fit
 
-        if not np.isclose(temp_list, temperature).any():
+        if temperature not in temp_list:
             # add the temperature to the list of temperatures - needed for reading the data out correctly
             temp_list.append(temperature)
 
