@@ -218,6 +218,7 @@ for structure in struc_temp_input_data.keys():
         temperature_fit_energies = temperature_energy_fit(temperature_fit_temperatures)
         plt.plot(temperatures, energies[:,i], 'o', temperature_fit_temperatures, temperature_fit_energies, '-')
         plt.savefig("temperature_energy_fit_volume_{}.pdf".format(volumes[i]))
+        plt.close()
 
     # write fits to input dict
     initial_temperature = temperatures[0]
