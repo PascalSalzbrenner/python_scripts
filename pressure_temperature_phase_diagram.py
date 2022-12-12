@@ -116,7 +116,7 @@ rank = 5
 
 # hardcode step size for writing out the pressure-volume data as well as temperatures, can again be changed easily here
 pressure_increment = 0.01
-t_step = 0.1
+t_step = 1
 
 # dictionaries to contain the temperature - pressure / volume - energy data for each structure, input as well as output
 struc_temp_input_data = {}
@@ -217,7 +217,7 @@ for structure in struc_temp_input_data.keys():
         temperature_fit_temperatures = np.arange(temperatures[0], temperatures[-1], t_step)
         temperature_fit_energies = temperature_energy_fit(temperature_fit_temperatures)
         plt.plot(temperatures, energies[:,i], 'o', temperature_fit_temperatures, temperature_fit_energies, '-')
-        plt.savefig("temperature_energy_fit_volume_{}.pdf".format(volumes[i]))
+        plt.savefig("temperature_energy_fit_{}_volume_{}.pdf".format(structure, volumes[i]))
         plt.close()
 
     # write fits to input dict
@@ -244,6 +244,9 @@ for structure in struc_temp_input_data.keys():
 # set up dictionary to contain output data
 full_energies = {}
 
+# set up list of temperatures
+temp_list = []
+
 for structure in struc_temp_input_data.keys():
 
     for temperature in struc_temp_input_data[structure].keys():
@@ -257,9 +260,12 @@ for structure in struc_temp_input_data.keys():
         fit_volumes = np.arange(volumes[0], volumes[-1], 0.001)
         fit_energies = interpolate.splev(fit_volumes, splines, der=0)
 
-        plt.plot(volumes, energies, 'o', fit_volumes, fit_energies, '-')
-        plt.savefig("energy_volume_polynomial_fit_{}_{}_K.pdf".format(structure, temperature))
-        plt.close()
+        # output plots every 100 K
+        if np.isclose(float(temperature) % 100, 0):
+
+            plt.plot(volumes, energies, 'o', fit_volumes, fit_energies, '-')
+            plt.savefig("energy_volume_polynomial_fit_{}_{}_K.pdf".format(structure, temperature))
+            plt.close()
 
         # calculate the first derivative of the interpolation to get the pressure
         pressures = interpolate.splev(volumes, splines, der=1)
@@ -274,9 +280,13 @@ for structure in struc_temp_input_data.keys():
 
         pressure_fit_pressures = np.arange(pressures[-1],pressures[0],0.01)
         pressure_fit_energies = pressure_energy_fit(pressure_fit_pressures)
-        plt.plot(pressures, full_energies[structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
-        plt.savefig("pressure_energy_fit_{}_{}_K.pdf".format(structure, temperature))
-        plt.close()
+
+        # output plots every 100 K
+        if np.isclose(float(temperature) % 100, 0):
+            
+            plt.plot(pressures, full_energies[structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
+            plt.savefig("pressure_energy_fit_{}_{}_K.pdf".format(structure, temperature))
+            plt.close()
 
         # at this point we can flip the pressure to the order lowest -> highest for writing out
         pressures = np.flip(pressures)
@@ -288,34 +298,40 @@ for structure in struc_temp_input_data.keys():
         initial_pressure = static_pressures[0]
         final_pressure = static_pressures[-1]
 
-        pressure_energy_file = open("phonon_pressure_energy_{}_{}_K.dat".format(structure, temperature), "w")
+        # out data every 100 K - should be sufficient to interpolate if I ever need it in a different script
+        if np.isclose(float(temperature) % 100, 0):
 
-        pressure_energy_file.write("# Pressure [GPa]; Gibbs Free Energy [meV/atom]\n")
+            pressure_energy_file = open("phonon_pressure_energy_{}_{}_K.dat".format(structure, temperature), "w")
 
-        while initial_pressure <= final_pressure:
-            pressure_energy_file.write("{} {}\n".format(initial_pressure, 1000*pressure_energy_fit(initial_pressure)))
+            pressure_energy_file.write("# Pressure [GPa]; Gibbs Free Energy [meV/atom]\n")
 
-            initial_pressure += pressure_increment
+            while initial_pressure <= final_pressure:
+                pressure_energy_file.write("{} {}\n".format(initial_pressure, 1000*pressure_energy_fit(initial_pressure)))
 
-        pressure_energy_file.close()
+                initial_pressure += pressure_increment
 
-        # we reset the initial pressure here, so we have access to it when constructing the phase diagram
-        # these should be the same for every structure anyways
-        initial_pressure = static_pressures[0]
+            pressure_energy_file.close()
+
+            # we reset the initial pressure here, so we have access to it when constructing the phase diagram
+            # these should be the same for every structure anyways
+            initial_pressure = static_pressures[0]
 
 ######################################### write out the static and corresponding phonon pressures #########################################
+        
+        # output presssure every 100 K to diagnose the trend
+        if np.isclose(float(temperature) % 100, 0):
+        
+            # open file to write the old and new pressures to
+            pressure_file = open("static_phonon_pressure_{}_{}_K.dat".format(structure, temperature), "w")
+            pressure_file.write("# rank of polynomial: {}\n".format(rank))
+            pressure_file.write("# static-lattice pressure [GPa]; vibration-corrected pressure [GPa]\n")
 
-        # open file to write the old and new pressures to
-        pressure_file = open("static_phonon_pressure_{}_{}_K.dat".format(structure, temperature), "w")
-        pressure_file.write("# rank of polynomial: {}\n".format(rank))
-        pressure_file.write("# static-lattice pressure [GPa]; vibration-corrected pressure [GPa]\n")
+            # copy over the files we have operated on, with the correct pressure replacing that of the static lattice
+            for i in range(len(structure_files)):
+                # the structure_files and pressures lists will be of the same length, and the elements in the same place will correspond to one another
+                pressure_file.write("{} {}\n".format(static_pressures[i], pressures[i]))
 
-        # copy over the files we have operated on, with the correct pressure replacing that of the static lattice
-        for i in range(len(structure_files)):
-            # the structure_files and pressures lists will be of the same length, and the elements in the same place will correspond to one another
-            pressure_file.write("{} {}\n".format(static_pressures[i], pressures[i]))
-
-        pressure_file.close()
+            pressure_file.close()
 
         # store pressure_energy_fit
         if structure not in struc_temp_pressure_energy_fits.keys():
@@ -323,6 +339,10 @@ for structure in struc_temp_input_data.keys():
         else:
             # not the first temperature for this structure
             struc_temp_pressure_energy_fits[structure][temperature] = pressure_energy_fit
+
+        if not np.isclose(temp_list, temperature).any():
+            # add the temperature to the list of temperatures - needed for reading the data out correctly
+            temp_list.append(temperature)
 
 ####################################################### generation of phase diagram #######################################################
 
@@ -349,7 +369,7 @@ else:
 pd_data_file = open("phase_diagram_data.dat", "w")
 pd_data_file.write("# Pressure [GPa]; Temperature [K]; Ground state structure\n")
 
-for temperature in temp_dict.keys():
+for temperature in temp_list:
 
     initial_pressure_copy = initial_pressure
 
