@@ -114,6 +114,28 @@ plt.plot(reference_pressures, full_energies[reference_structure], 'o', pressure_
 plt.savefig("pressure_energy_fit_{}.pdf".format(reference_structure))
 plt.close()
 
+# we also create a new directory with the .res files, where the energy is substituted to be correct for the full pressure
+if not ("correct_pressure_energy_resfiles" in os.listdir()):
+    os.mkdir("correct_pressure_energy_resfiles")
+
+for file in files_dict[reference_structure]:
+
+    infile = open(file, "r")
+    outfile = open("correct_pressure_energy_resfiles/{}".format(file), "w")
+
+    # in the first line, we read the pressure and then subsititute the energy from the fit at that pressure
+    data = infile.readline().split()
+    pressure = float(data[2])
+    data[4] = str(reference_pressure_energy_fit(pressure)*reference_structure_natoms) # the fit is per atom, so we multiply here
+    outfile.write(" ".join(data)+"\n")
+
+    # copy over the rest of the lines
+    for line in infile:
+        outfile.write(line)
+
+    infile.close()
+    outfile.close()
+
 # at this point we can flip the reference_pressures to the order lowest -> highest for writing out
 reference_pressures = np.flip(reference_pressures)
 
@@ -179,6 +201,25 @@ for structure, structure_files in files_dict.items():
 
         # at this point we can flip the pressure to the order lowest -> highest for writing out
         pressures = np.flip(pressures)
+
+        for file in structure_files:
+
+            infile = open(file, "r")
+            outfile = open("correct_pressure_energy_resfiles/{}".format(file), "w")
+
+            # in the first line, we read the pressure and then subsititute the energy from the fit at that pressure
+            data = infile.readline().split()
+            pressure = float(data[2])
+            data[4] = str(pressure_energy_fit(pressure)*natoms) # the fit is per atom, so we multiply here
+
+            outfile.write(" ".join(data)+"\n")
+
+            # copy over the rest of the lines
+            for line in infile:
+                outfile.write(line)
+
+            infile.close()
+            outfile.close()
 
 ########################################## write out pressure-volume data for subsequent plotting ##########################################
 
