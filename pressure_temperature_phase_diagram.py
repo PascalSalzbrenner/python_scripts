@@ -55,7 +55,7 @@ def connect_boundary_list(boundary_list, t_step):
 
             # also, to be fair, we do want to connect to a point adjacent in temperature
 
-            if np.abs(point[1]-current_point[1]) < (t_step+1):
+            if np.abs(point[1]-current_point[1]) < (2*t_step-t_step/10):
 
                 distance = np.abs(point[0]-current_point[0])
 
@@ -63,7 +63,10 @@ def connect_boundary_list(boundary_list, t_step):
                     nearest_point_index = j
                     shortest_distance = distance
 
-        connected_boundary_list.append(boundary_list.pop(nearest_point_index))
+        try:
+            connected_boundary_list.append(boundary_list.pop(nearest_point_index))
+        except IndexError:
+            return connected_boundary_list            
 
     return connected_boundary_list
 
@@ -116,7 +119,7 @@ rank = 5
 
 # hardcode step size for writing out the pressure-volume data as well as temperatures, can again be changed easily here
 pressure_increment = 0.01
-t_step = 1
+t_step = 5
 
 # dictionaries to contain the temperature - pressure / volume - energy data for each structure, input as well as output
 struc_temp_input_data = {}
@@ -174,15 +177,17 @@ for temp_dir in temp_dirs:
             important_line = data_file.readline().split()
             natoms = int(important_line[7])
             static_pressures.append(float(important_line[2]))
-            volumes.append(float(important_line[3]))
+            # volumes and energies are both calculated per atom to enable comparison between structures
+            volumes.append(float(important_line[3])/natoms)
             # we need to fit to the energy, not the enthalpy, so we remove the PV contribution
-            energies.append((float(important_line[4])-(static_pressures[-1]/pressure_conversion)*volumes[-1])/natoms)
+            energies.append((float(important_line[4])/natoms-(static_pressures[-1]/pressure_conversion)*volumes[-1]))
 
             data_file.close()
 
         # flip the lists as we require the volumes to be sorted from lowest (corresponding to the highest pressure) to highest (vice versa)
         volumes = np.flip(np.array(volumes))
         energies = np.flip(np.array(energies))
+        static_pressures = np.flip(np.array(static_pressures))
 
         struc_temp_input_data[structure][temperature] = [volumes[:], energies[:], static_pressures[:]]
 
@@ -197,7 +202,7 @@ for structure in struc_temp_input_data.keys():
     for temperature in struc_temp_input_data[structure].keys():
         temperatures.append(float(temperature))
 
-        # note that energies is itself a list, so for every temperature we have several energy values corresponding to the different energies
+        # note that energies is itself a list, so for every temperature we have several energy values corresponding to the different volumes
         # we do one fit for each entry, the order of the fits corresponds to that of the volumes
         energies.append(struc_temp_input_data[structure][temperature][1])
 
@@ -273,6 +278,7 @@ for structure in struc_temp_input_data.keys():
         # find the Gibbs energies per atom using the correct pressure - add the PV term back in
         # pressures are currently sorted from highest to lowest - this corresponds to the order of the energies and volumes
         full_energies[structure] = np.array(energies + pressures/pressure_conversion * volumes)
+
         # fit a rank 5 polynomial to the pressure-energy data for interpolation
         pressure_energy_fit = Polynomial.fit(pressures, full_energies[structure], rank)
 
@@ -287,14 +293,14 @@ for structure in struc_temp_input_data.keys():
             plt.close()
 
         # at this point we can flip the pressure to the order lowest -> highest for writing out
-        pressures = np.flip(pressures)
+ #       pressures = np.flip(pressures)
 
 ########################################## write out pressure-volume data for subsequent plotting ##########################################
     
         # use the static pressures to delimit the pressure range
 
-        initial_pressure = static_pressures[0]
-        final_pressure = static_pressures[-1]
+        initial_pressure = static_pressures[-1]
+        final_pressure = static_pressures[0]
 
         # out data every 100 K - should be sufficient to interpolate if I ever need it in a different script
         if np.isclose(float(temperature) % 100, 0):
@@ -312,7 +318,7 @@ for structure in struc_temp_input_data.keys():
 
             # we reset the initial pressure here, so we have access to it when constructing the phase diagram
             # these should be the same for every structure anyways
-            initial_pressure = static_pressures[0]
+            initial_pressure = static_pressures[-1]
 
 ######################################### write out the static and corresponding phonon pressures #########################################
         
