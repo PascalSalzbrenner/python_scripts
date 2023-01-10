@@ -512,7 +512,6 @@ for index_str, pt_line in phase_transition_points.items():
     x, y = zip(*connect_boundary_list(deepcopy(pt_line), t_step))
 
     plt.plot(x, y, "#000080")
-    plt.text(x[0], y[0], index_str)
 
 # set plot parameters
 x_limits = [0, round_to_nearest_larger_five(max_press)]
