@@ -14,11 +14,14 @@
 import os
 import sys
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+
 from copy import deepcopy
 from scipy import interpolate
 from natsort import natsorted
 from numpy.polynomial import Polynomial
+from matplotlib.colors import ListedColormap
 
 ############################################################ helper functions ############################################################
 
@@ -248,8 +251,9 @@ for structure in struc_temp_input_data.keys():
 # set up dictionary to contain output data
 full_energies = {}
 
-# set up list of temperatures
+# set up list of temperatures, both as strings and as numbers
 temp_list = []
+temp_list_numbers = []
 
 for structure in struc_temp_input_data.keys():
 
@@ -291,9 +295,6 @@ for structure in struc_temp_input_data.keys():
             plt.plot(pressures, full_energies[structure], 'o', pressure_fit_pressures, pressure_fit_energies, '-')
             plt.savefig("pressure_energy_fit_{}_{}_K.pdf".format(structure, temperature))
             plt.close()
-
-        # at this point we can flip the pressure to the order lowest -> highest for writing out
- #       pressures = np.flip(pressures)
 
 ########################################## write out pressure-volume data for subsequent plotting ##########################################
     
@@ -347,6 +348,11 @@ for structure in struc_temp_input_data.keys():
         if temperature not in temp_list:
             # add the temperature to the list of temperatures - needed for reading the data out correctly
             temp_list.append(temperature)
+            temp_list_numbers.append(float(temperature))
+
+# sort temp lists
+temp_list = natsorted(temp_list)
+temp_list_numbers.sort()
 
 ####################################################### generation of phase diagram #######################################################
 
@@ -373,11 +379,20 @@ else:
 pd_data_file = open("phase_diagram_data.dat", "w")
 pd_data_file.write("# Pressure [GPa]; Temperature [K]; Ground state structure\n")
 
+# create list to hold pressures
+pressure_list = []
+
+# create list to hold indices
+minimum_index_list = []
+
 for temperature in temp_list:
 
     initial_pressure_copy = initial_pressure
 
     while initial_pressure_copy <= final_pressure:
+
+        if len(pressure_list) < int(((final_pressure-initial_pressure)/pressure_increment)+1):
+            pressure_list.append(initial_pressure_copy)
         
         energies = []
 
@@ -387,12 +402,17 @@ for temperature in temp_list:
         energies = np.array(energies)
         minimum_energy_index = np.argmin(energies)
 
+        minimum_index_list.append(minimum_energy_index)
+
         phase_diagram_data.append([initial_pressure_copy,temperature,minimum_energy_index,structure_list[minimum_energy_index]])
         pd_data_file.write("{} {} {}\n".format(initial_pressure_copy, temperature, structure_list[minimum_energy_index]))
 
         initial_pressure_copy += pressure_increment
 
 pd_data_file.close()
+
+# reshape the minimum_index_list to pass it to pandas
+minimum_index_array=np.array(minimum_index_list).reshape([len(temp_list), len(pressure_list)])
 
 # determine phase transition (pressure, temperature) points
 # read out the data corresponding to the first point to start us off, then iterate over the rest
@@ -465,30 +485,10 @@ pt_points_file.close()
 plt.xlabel("Pressure [GPa]")
 plt.ylabel("Temperature [K]")
 
-# define plotting colours
+# define plotting colourmap
+cmap = ListedColormap(["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02", "#DC143C"])
 
-liquid_colour = "#DC143C"
-
-colour_list = ["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02"]
-
-# plot a dot for every point phase_diagram_data, with the index of the structure in structure_list matched to one in colour_list
-
-# define a colour dictionary which allows us to use the plt.scatter function instead of plotting every point individually
-struc_colour_dict = {}
-
-for point in phase_diagram_data[1:]:
-
-    colour = colour_list[point[2]]
-
-    if colour not in struc_colour_dict.keys():
-        # colour acts here as a proxy for structure
-        struc_colour_dict[colour] = [[point[0]], [point[1]]]
-    else:
-        struc_colour_dict[colour][0].append(point[0])
-        struc_colour_dict[colour][1].append(point[1])
-
-for colour, points in struc_colour_dict.items():
-    plt.scatter(points[0], points[1], c=colour)
+plt.pcolormesh(pressure_list,temp_list_numbers,minimum_index_array, cmap=cmap, vmin=0, vmax=len(structure_list)-1)
 
 # plot phase boundaries
 
@@ -523,64 +523,5 @@ plt.ylim(y_limits[0], y_limits[1])
 
 plt.savefig("phase_diagram.pdf")
 plt.close()
-
-"""
-plt.xlabel("Pressure [GPa]")
-plt.ylabel("Temperature [K]")
-
-# determine maximum temperature and pressure to set nice upper boundaries for the plot
-# set low starting values
-max_press = 0
-max_temp = 0
-
-for index_str, pt_line in phase_transition_points.items():
-
-    # check if we have found new maximum values
-    current_max = np.amax(pt_line, axis=0)
-    current_max_press = current_max[0]
-    current_max_temp = current_max[1]
-
-    if current_max_press > max_press:
-        max_press = current_max_press
-    if current_max_temp > max_temp:
-        max_temp = current_max_temp
-
-    x, y = zip(*connect_boundary_list(deepcopy(pt_line), t_step))
-
-    plt.plot(x, y, "#000080")
-    plt.text(x[0], y[0], index_str)
-
-# set plot parameters
-x_limits = [0, round_to_nearest_larger_five(max_press)]
-y_limits = [0, round_to_nearest_larger_five(max_temp)]
-
-plt.xlim(x_limits[0], x_limits[1])
-plt.ylim(y_limits[0], y_limits[1])
-
-plt.savefig("phase_diagram_boundaries_only.pdf")
-
-plt.clf()
-
-# define plotting colours
-
-liquid_colour = "#DC143C"
-
-colour_list = ["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02"]
-
-# plot with regions coloured according to different structures
-
-for index_str, pt_line in phase_transition_points.items():
-
-    x, y = zip(*connect_boundary_list(pt_line, t_step))
-    plt.plot(x, y, "black")
-
-
-    plt.fill_between(x, 0, y, alpha=0.5)
-
-plt.xlim(x_limits[0], x_limits[1])
-plt.ylim(y_limits[0], y_limits[1])
-
-plt.savefig("phase_diagram.pdf")
-"""
 
 
