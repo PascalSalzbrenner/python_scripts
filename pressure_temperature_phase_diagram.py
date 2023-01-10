@@ -14,7 +14,6 @@
 import os
 import sys
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
 from copy import deepcopy
@@ -488,6 +487,7 @@ plt.ylabel("Temperature [K]")
 # define plotting colourmap
 cmap = ListedColormap(["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02", "#DC143C"])
 
+# plot colour mesh of phases
 plt.pcolormesh(pressure_list,temp_list_numbers,minimum_index_array, cmap=cmap, vmin=0, vmax=len(structure_list)-1)
 
 # plot phase boundaries
@@ -520,6 +520,7 @@ y_limits = [0, round_to_nearest_larger_five(max_temp)]
 plt.xlim(x_limits[0], x_limits[1])
 plt.ylim(y_limits[0], y_limits[1])
 
+plt.savefig("phase_diagram.png", dpi=300)
 plt.savefig("phase_diagram.pdf")
 plt.close()
 
