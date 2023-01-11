@@ -488,7 +488,7 @@ plt.ylabel("Temperature [K]")
 cmap = ListedColormap(["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02", "#DC143C"])
 
 # plot colour mesh of phases
-plt.pcolormesh(pressure_list,temp_list_numbers,minimum_index_array, cmap=cmap, vmin=0, vmax=len(structure_list)-1)
+plt.pcolormesh(pressure_list,temp_list_numbers,minimum_index_array, cmap=cmap, vmin=0, vmax=len(structure_list)-1, alpha=0.75)
 
 # plot phase boundaries
 
