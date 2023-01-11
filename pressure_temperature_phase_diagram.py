@@ -441,10 +441,10 @@ if "melt_curve.dat" in ls_top:
     plt.close()
 
     # iterate over phase diagram data
-    # at every point, for a given pressure, where temperature >= melt temperature, we change the index to that for the liquid
+    # at every point, for a given pressure, where temperature > melt temperature, we change the index to that for the liquid
     for i in range(len(phase_diagram_data)):
 
-        if float(phase_diagram_data[i][1]) >= melt_curve(phase_diagram_data[i][0]):
+        if float(phase_diagram_data[i][1]) > melt_curve(phase_diagram_data[i][0]):
             phase_diagram_data[i][2] = melt_index
             phase_diagram_data[i][3] = "liquid"
 
@@ -529,6 +529,35 @@ for point in phase_diagram_data[1:]:
 
 pt_points_file.close()
 
+# treatment for extremely obscure problem I faced with lead
+# very near the phase transition for a tiny bit it's first Fm-3m-liquid, then P63/mmc-liquid, then Fm-3m-liquid
+# this leads to regions where visually, there are two melt boundaries - to avoid this, we split lists where successive points
+# are separated by more than t_step (as the outer loop is over temperature, this is what implies a discontinuous line)
+
+split_phase_transition_points = {}
+
+for index_str, pt_line in phase_transition_points.items():
+
+    split_pt_lines = []
+    split_pt_line = [pt_line[0]]
+
+    for pt_point in pt_line[1:]:
+        if np.isclose(abs(pt_point[1]-split_pt_line[-1][1]), t_step):
+            # continuous line
+            split_pt_line.append(pt_point)
+        else:
+            # there is a split in the line here
+            # add the existing list to the list of split lines and start a new list
+            split_pt_lines.append(deepcopy(split_pt_line))
+            split_pt_line = [pt_point]
+
+    # add the final split_pt_line to the superlist
+    split_pt_lines.append(deepcopy(split_pt_line))
+
+    # add all the lines to the dictionary of split lines
+    for i in range(len(split_pt_lines)):
+        split_phase_transition_points["{}_{}".format(index_str, i)] = split_pt_lines[i]
+
 ########################################################### plotting #####################################################################
 
 plt.xlabel("Pressure [GPa]")
@@ -547,7 +576,7 @@ plt.pcolormesh(pressure_list,temp_list_numbers,minimum_index_array, cmap=cmap, v
 max_press = 0
 max_temp = 0
 
-for index_str, pt_line in phase_transition_points.items():
+for index_str, pt_line in split_phase_transition_points.items():
 
     # check if we have found new maximum values
     current_max = np.amax(pt_line, axis=0)
@@ -559,20 +588,24 @@ for index_str, pt_line in phase_transition_points.items():
     if current_max_temp > max_temp:
         max_temp = current_max_temp
 
-    print(index_str)
-    x, y = zip(*connect_boundary_list(deepcopy(pt_line), t_step))
+    x, y = zip(*pt_line)
 
     plt.plot(x, y, "#000080")
 
 # set plot parameters
-x_limits = [0, round_to_nearest_larger_five(max_press)]
+
+# when we have given melt data, set the xrange to the limits of the melt data
+if "melt_curve.dat" in ls_top:
+    x_limits = [int(min(melt_pressures)), int(max(melt_pressures))]
+else:
+    x_limits = [0, round_to_nearest_larger_five(max_press)]
 y_limits = [0, round_to_nearest_larger_five(max_temp)]
 
 plt.xlim(x_limits[0], x_limits[1])
 plt.ylim(y_limits[0], y_limits[1])
 
 plt.savefig("phase_diagram.png", dpi=300)
-#plt.savefig("phase_diagram.pdf")
+plt.savefig("phase_diagram.pdf")
 plt.close()
 
 
