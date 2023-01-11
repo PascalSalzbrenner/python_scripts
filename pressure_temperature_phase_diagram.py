@@ -361,6 +361,7 @@ phase_diagram_data = []
 structure_list = list(struc_temp_pressure_energy_fits.keys())
 
 # write out list of structures if it does not exist yet - if it does exist, we use it as an input for naming the structures
+# this must NOT contain the data for the liquid, it will mess things up if it does!
 
 if not "structures_indices.dat" in os.listdir():
     with open("structures_indices.dat", "w") as index_file:
@@ -374,15 +375,8 @@ else:
             structure_name = contents[1]
             structure_list[index] = structure_name
 
-# output file
-pd_data_file = open("phase_diagram_data.dat", "w")
-pd_data_file.write("# Pressure [GPa]; Temperature [K]; Ground state structure\n")
-
 # create list to hold pressures
 pressure_list = []
-
-# create list to hold indices
-minimum_index_list = []
 
 for temperature in temp_list:
 
@@ -401,19 +395,75 @@ for temperature in temp_list:
         energies = np.array(energies)
         minimum_energy_index = np.argmin(energies)
 
-        minimum_index_list.append(minimum_energy_index)
-
         phase_diagram_data.append([initial_pressure_copy,temperature,minimum_energy_index,structure_list[minimum_energy_index]])
-        pd_data_file.write("{} {} {}\n".format(initial_pressure_copy, temperature, structure_list[minimum_energy_index]))
 
         initial_pressure_copy += pressure_increment
+
+################################ check if melting data has been given; if so, adapt the phase diagram data ################################
+
+# create list to hold indices
+minimum_index_list = []
+
+if "melt_curve.dat" in ls_top:
+
+    # read pressure-temperature data for the melt curve and fit a polynomial for interpolation
+    melt_pressures = []
+    melt_temperatures = []
+
+    # assign index to melt which is the next unused one
+    melt_index = len(structure_list)
+
+    # put "liquid" into structure_list
+    structure_list.append("liquid")
+
+    with open("melt_curve.dat", "r") as melt_file:
+
+        # skip first line
+        melt_file.readline()
+
+        # read data from other lines
+        for line in melt_file:
+
+            data=line.split()
+
+            melt_pressures.append(float(data[0]))
+            melt_temperatures.append(float(data[1]))
+
+    # fit melt curve
+    melt_curve = Polynomial.fit(melt_pressures, melt_temperatures, rank)
+
+    melt_curve_fit_pressures = np.arange(melt_pressures[0],melt_pressures[-1],0.01)
+    melt_curve_fit_temperatures = melt_curve(melt_curve_fit_pressures)
+
+    # plot melt curve to make sure everything has worked
+    plt.plot(melt_pressures, melt_temperatures, 'o', melt_curve_fit_pressures, melt_curve_fit_temperatures, '-')
+    plt.savefig("melt_curve.pdf")
+    plt.close()
+
+    # iterate over phase diagram data
+    # at every point, for a given pressure, where temperature >= melt temperature, we change the index to that for the liquid
+    for i in range(len(phase_diagram_data)):
+
+        if float(phase_diagram_data[i][1]) >= melt_curve(phase_diagram_data[i][0]):
+            phase_diagram_data[i][2] = melt_index
+            phase_diagram_data[i][3] = "liquid"
+
+        minimum_index_list.append(phase_diagram_data[i][2])
+
+# write phase diagram data to output file
+pd_data_file = open("phase_diagram_data.dat", "w")
+pd_data_file.write("# Pressure [GPa]; Temperature [K]; Ground state structure\n")
+
+for point in phase_diagram_data:
+    pd_data_file.write("{} {} {}\n".format(point[0], point[1], point[3]))
 
 pd_data_file.close()
 
 # reshape the minimum_index_list to pass it to pandas
 minimum_index_array=np.array(minimum_index_list).reshape([len(temp_list), len(pressure_list)])
 
-# determine phase transition (pressure, temperature) points
+##################################################### determine the phase boundaries #####################################################
+
 # read out the data corresponding to the first point to start us off, then iterate over the rest
 # we write to file as well as storing these values
 
@@ -509,6 +559,7 @@ for index_str, pt_line in phase_transition_points.items():
     if current_max_temp > max_temp:
         max_temp = current_max_temp
 
+    print(index_str)
     x, y = zip(*connect_boundary_list(deepcopy(pt_line), t_step))
 
     plt.plot(x, y, "#000080")
@@ -521,7 +572,7 @@ plt.xlim(x_limits[0], x_limits[1])
 plt.ylim(y_limits[0], y_limits[1])
 
 plt.savefig("phase_diagram.png", dpi=300)
-plt.savefig("phase_diagram.pdf")
+#plt.savefig("phase_diagram.pdf")
 plt.close()
 
 
