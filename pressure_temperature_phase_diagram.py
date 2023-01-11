@@ -591,16 +591,6 @@ for index_str, pt_line in split_phase_transition_points.items():
     if current_max_temp > max_temp:
         max_temp = current_max_temp
 
-    """
-    if "liquid" not in index_str:
-
-        # this is probably incorrect anyways, but I want to show "what I get" first
-        # so, as the problem above leads to a discontinuous line, we only connect the boundary list when the liquid is not involved
-        # for liquids it should always be ordered correctly anyways
-        x, y = zip(*connect_boundary_list(deepcopy(pt_line), t_step))
-    else:
-    """
-
     x, y = zip(*pt_line)
 
     plt.plot(x, y, "#000080")
