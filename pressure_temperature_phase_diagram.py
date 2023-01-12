@@ -10,6 +10,7 @@
 # implemented to work with my calculate_free_energy_wobble script
 
 # written by Pascal Salzbrenner, pts28@cam.ac.uk
+# with thanks to Se Hun Joo for introducing me to pcolormesh
 
 import os
 import sys
