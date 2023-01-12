@@ -450,12 +450,12 @@ if "melt_curve.dat" in ls_top:
 
         minimum_index_list.append(phase_diagram_data[i][2])
 
-# write phase diagram data to output file
+# write phase diagram data to output file - format such that reading can be done with pandas
 pd_data_file = open("phase_diagram_data.dat", "w")
-pd_data_file.write("# Pressure [GPa]; Temperature [K]; Ground state structure\n")
+pd_data_file.write("Pressure [GPa], Temperature [K], Ground state structure\n")
 
 for point in phase_diagram_data:
-    pd_data_file.write("{} {} {}\n".format(point[0], point[1], point[3]))
+    pd_data_file.write("{}, {}, {}\n".format(point[0], point[1], point[3]))
 
 pd_data_file.close()
 
