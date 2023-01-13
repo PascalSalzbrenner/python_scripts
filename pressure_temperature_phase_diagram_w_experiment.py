@@ -71,7 +71,7 @@ for row in df_sim.values:
     minimum_index_list.append(deepcopy(single_row))
 
 # set up mesh of pressure, temperature data
-pressure_list,temp_list==np.meshgrid(X,Y)
+pressure_list,temp_list=np.meshgrid(X,Y)
 
 # read phase_transition_points.dat file
 pt_file = open("phase_transition_points.dat", "r")
