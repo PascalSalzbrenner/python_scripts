@@ -31,6 +31,48 @@ cmap = ListedColormap(["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#
 # define symbols for experimental data
 symbols = ["x", "o", "v", "^", "<", ">", "s", "+", "H", "D"]
 
+###################################################################### helper functions ######################################################################
+
+def round_to_nearest_larger_five(number):
+    """Function to round to the largest number divisible by 5*10^(num_digits-2) - eg 17.3 would be rounded to 20, 1167 to 1500, etc
+       # will break if the number is smaller than 0, but at least for the application here this shouldn't occur
+       :param float number: number to be rounded
+
+       :returns int rounded_number: rounded number"""
+
+    # convert number to string for a variety of useful operations
+    str_number = str(number)
+
+    # find the parts we do and don't round
+    rounded_part = float(str_number[1:])
+    str_rounded_part = str(rounded_part)
+    not_rounded_remainder = int(number - rounded_part)
+
+    # find the number of digits before the comma for the rounded part
+    # also handle it if the rounded_part is smaller than 1
+
+    if rounded_part >= 1:
+        num_digits = len(str_rounded_part.split(".")[0])
+    elif not_rounded_remainder > 0:
+        # if not_rounded_remainder is an integer > 0, we always want to round to tenths
+        num_digits = 0
+    else:
+        # the number of digits behind the comma corresponding to the first non-zero value is equal to the length before the comma of 1/rounded_part
+        num_digits = 1 - len(str(int(1/rounded_part)))
+    # find the multiple of 5 we round to
+    multiple_of_five = 5*(10**(num_digits-1))
+
+    # if this is smaller than the part we want to round, then we multiply by 2
+    # ie we always want to round up, and the next-largest number divisible by the multiple of 5 is twice it
+    # eg, if we have 1167, we want to round to 1500, but if we have 1667, we want to round to 2000
+    if multiple_of_five < rounded_part:
+        multiple_of_five *= 2
+
+    # put the two parts together
+    rounded_number = not_rounded_remainder + multiple_of_five
+
+    return rounded_number
+
 
 ################################################################### reading of input files ###################################################################
 
@@ -151,7 +193,7 @@ plt.xlabel("Pressure [GPa]")
 plt.ylabel("Temperature [K]")
 
 # plot colour mesh of phases
-plt.pcolormesh(pressure_list,temp_list,minimum_index_list, cmap=cmap, vmin=0, vmax=len(structure_list)-1, alpha=0.75)
+plt.pcolormesh(pressure_list,temp_list,minimum_index_list, cmap=cmap, vmin=0, vmax=len(structure_list), alpha=0.75)
 
 # plot phase boundaries
 # determine maximum temperature and pressure to set nice upper boundaries for the plot
@@ -176,17 +218,13 @@ for pt_line in split_phase_transition_points:
     plt.plot(x, y, pb_colour)
 
 # plot experimental data
-for data_type, data in experimental_data:
+for data_type, data in experimental_data.items():
 	plt.scatter(data[0], data[1], c=pb_colour, marker=data[2], label=data_type)
 
 plt.legend()
 
 # set plot parameters
-# when we have given melt data, set the xrange to the limits of the melt data
-if "melt_curve.dat" in ls_top:
-    x_limits = [int(min(melt_pressures)), int(max(melt_pressures))]
-else:
-    x_limits = [0, round_to_nearest_larger_five(max_press)]
+x_limits = [0, round_to_nearest_larger_five(max_press)]
 y_limits = [0, round_to_nearest_larger_five(max_temp)]
 
 plt.xlim(x_limits[0], x_limits[1])
