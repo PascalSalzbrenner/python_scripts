@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from copy import deepcopy
 from matplotlib.colors import ListedColormap
 
 ################################################################ hardcode some input variables ################################################################
@@ -55,12 +56,19 @@ Y = df_sim.index.values
 # convert structure names into indices
 minimum_index_list = []
 
-for structure in df_sim.values:
-	print(structure)
-	if structure.lower() == "liquid":
-		minimum_index_list.append(len(structure_list))
-	else:
-		minimum_index_list.append(structure_list.index(structure))
+for row in df_sim.values:
+	
+    # the data is already organised into a grid, so we go row by row
+    single_row = []
+
+    for structure in row:
+
+    	if structure.lower() == "liquid":
+    		single_row.append(len(structure_list))
+    	else:
+    		single_row.append(structure_list.index(structure))
+
+    minimum_index_list.append(deepcopy(single_row))
 
 # set up mesh of pressure, temperature data
 pressure_list,temp_list==np.meshgrid(X,Y)
