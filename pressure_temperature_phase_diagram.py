@@ -304,7 +304,7 @@ for structure in struc_temp_input_data.keys():
 
 ########################################## write out pressure-volume data for subsequent plotting ##########################################
 
-print("writing out pressure-volume data")
+        print("writing out pressure-volume data")
 
         # use the static pressures to delimit the pressure range
 
@@ -331,7 +331,7 @@ print("writing out pressure-volume data")
 
 ######################################### write out the static and corresponding phonon pressures #########################################
 
-print("writing out static and phonon-modified pressures")
+        print("writing out static and phonon-modified pressures")
         
         # output presssure every 100 K to diagnose the trend
         if np.isclose(float(temperature) % 100, 0):
