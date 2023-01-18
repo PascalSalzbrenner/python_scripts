@@ -130,6 +130,8 @@ struc_temp_pressure_energy_fits = {}
 
 ################################################### reading pressure-volume-energy data ###################################################
 
+print("reading input data")
+
 ls_top = os.listdir()
 ls_top = natsorted(ls_top)
 temp_dirs = [temp_dir for temp_dir in ls_top if "temp_" in temp_dir]
@@ -196,6 +198,8 @@ for temp_dir in temp_dirs:
 
 ############################ interpolate the temperature-free energy curves for every volume with a polynomial ############################
 
+print("Interpolating temperature-energy curves")
+
 for structure in struc_temp_input_data.keys():
 
     temperatures = []
@@ -248,6 +252,8 @@ for structure in struc_temp_input_data.keys():
 
 ########################################### fitting the polynomial and finding the real pressure ###########################################
 
+print("Calculating phonon-modified pressure and interpolating it")
+
 # set up dictionary to contain output data
 full_energies = {}
 
@@ -297,7 +303,9 @@ for structure in struc_temp_input_data.keys():
             plt.close()
 
 ########################################## write out pressure-volume data for subsequent plotting ##########################################
-    
+
+print("writing out pressure-volume data")
+
         # use the static pressures to delimit the pressure range
 
         initial_pressure = static_pressures[-1]
@@ -322,6 +330,8 @@ for structure in struc_temp_input_data.keys():
             initial_pressure = static_pressures[-1]
 
 ######################################### write out the static and corresponding phonon pressures #########################################
+
+print("writing out static and phonon-modified pressures")
         
         # output presssure every 100 K to diagnose the trend
         if np.isclose(float(temperature) % 100, 0):
@@ -355,6 +365,8 @@ temp_list = natsorted(temp_list)
 temp_list_numbers.sort()
 
 ####################################################### generation of phase diagram #######################################################
+
+print("generating phase diagram")
 
 # find lowest-energy structure for each temperature-pressure pair, as well as boundary between them
 phase_diagram_data = []
@@ -402,10 +414,9 @@ for temperature in temp_list:
 
 ################################ check if melting data has been given; if so, adapt the phase diagram data ################################
 
-# create list to hold indices
-minimum_index_list = []
-
 if "melt_curve.dat" in ls_top:
+
+    "Reading in melt curve"
 
     # read pressure-temperature data for the melt curve and fit a polynomial for interpolation
     melt_pressures = []
@@ -449,7 +460,16 @@ if "melt_curve.dat" in ls_top:
             phase_diagram_data[i][2] = melt_index
             phase_diagram_data[i][3] = "liquid"
 
-        minimum_index_list.append(phase_diagram_data[i][2])
+########################################################### Put data into plottable form #################################################
+
+print("Putting data into plottable form")
+
+# create list to hold indices
+minimum_index_list = []
+
+for data_point in phase_diagram_data:
+
+    minimum_index_list.append(phase_diagram_data[i][2])
 
 # write phase diagram data to output file - format such that reading can be done with pandas
 pd_data_file = open("phase_diagram_data.dat", "w")
@@ -464,6 +484,8 @@ pd_data_file.close()
 minimum_index_array=np.array(minimum_index_list).reshape([len(temp_list), len(pressure_list)])
 
 ##################################################### determine the phase boundaries #####################################################
+
+print("Determining the phase boundaries")
 
 # read out the data corresponding to the first point to start us off, then iterate over the rest
 # we write to file as well as storing these values
@@ -563,6 +585,8 @@ for index_str, pt_line in phase_transition_points.items():
         split_phase_transition_points["{}_{}".format(index_str, i)] = split_pt_lines[i]
 
 ########################################################### plotting #####################################################################
+
+print("Plotting phase diagram")
 
 plt.xlabel("Pressure [GPa]")
 plt.ylabel("Temperature [K]")
