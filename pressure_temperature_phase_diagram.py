@@ -469,7 +469,7 @@ minimum_index_list = []
 
 for data_point in phase_diagram_data:
 
-    minimum_index_list.append(phase_diagram_data[i][2])
+    minimum_index_list.append(data_point[2])
 
 # write phase diagram data to output file - format such that reading can be done with pandas
 pd_data_file = open("phase_diagram_data.dat", "w")
