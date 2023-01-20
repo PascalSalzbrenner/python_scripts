@@ -391,8 +391,6 @@ else:
 # create list to hold pressures
 pressure_list = []
 
-print(initial_pressure, final_pressure)
-
 for temperature in temp_list:
 
     initial_pressure_copy = initial_pressure
@@ -420,7 +418,7 @@ for temperature in temp_list:
 
 if "melt_curve.dat" in ls_top:
 
-    "Reading in melt curve"
+    print("Reading in melt curve")
 
     # read pressure-temperature data for the melt curve and fit a polynomial for interpolation
     melt_pressures = []
