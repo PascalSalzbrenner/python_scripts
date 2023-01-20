@@ -391,11 +391,15 @@ else:
 # create list to hold pressures
 pressure_list = []
 
+print(initial_pressure, final_pressure)
+
 for temperature in temp_list:
 
     initial_pressure_copy = initial_pressure
 
-    while initial_pressure_copy <= final_pressure:
+    while initial_pressure_copy < final_pressure + 0.5 * pressure_increment:
+        # sometimes a bit of error accumulates when adding the pressure increment, which can lead to the last step being slightly larger than final_pressure
+        # that's why we compare to a number slightly larger than final_pressure, but strictly smaller than final_pressure + pressure_increment
 
         if len(pressure_list) < int(((final_pressure-initial_pressure)/pressure_increment)+1):
             pressure_list.append(initial_pressure_copy)
@@ -467,15 +471,12 @@ print("Putting data into plottable form")
 # create list to hold indices
 minimum_index_list = []
 
-for data_point in phase_diagram_data:
-
-    minimum_index_list.append(data_point[2])
-
 # write phase diagram data to output file - format such that reading can be done with pandas
 pd_data_file = open("phase_diagram_data.dat", "w")
 pd_data_file.write("Pressure [GPa], Temperature [K], Ground state structure\n")
 
 for point in phase_diagram_data:
+    minimum_index_list.append(point[2])
     pd_data_file.write("{}, {}, {}\n".format(point[0], point[1], point[3]))
 
 pd_data_file.close()
