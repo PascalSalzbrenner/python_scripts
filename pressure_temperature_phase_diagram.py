@@ -395,7 +395,7 @@ for temperature in temp_list:
 
     initial_pressure_copy = initial_pressure
 
-    while initial_pressure_copy < final_pressure + 0.5 * pressure_increment:
+    while initial_pressure_copy < final_pressure + 0.1 * pressure_increment:
         # sometimes a bit of error accumulates when adding the pressure increment, which can lead to the last step being slightly larger than final_pressure
         # that's why we compare to a number slightly larger than final_pressure, but strictly smaller than final_pressure + pressure_increment
 
