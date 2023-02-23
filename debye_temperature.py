@@ -26,7 +26,7 @@ for line in dosfile:
 	if line.startswith("@"):
 
 		# these are comment lines - the only one which is relevant for us is the one telling us the frequency units
-		if 'xaxis' in line and 'label' in line '"' in line:
+		if 'xaxis' in line and 'label' in line and '"' in line:
 			# we parse for " as it is the only thing differentiating the line with the frequency units from the line with the font
 			data = line.split()
 			unit = line[4].lstrip('(').rstrip(')"')
@@ -35,7 +35,7 @@ for line in dosfile:
 			if unit == "meV":
 				# conversion factor is 1/k_B in K/meV
 				conversion_factor = 11.60451812
-			elif unit == "THz"
+			elif unit == "THz":
 				# conversion factor is h/k_B in K/THz
 				conversion_factor = 47.99243
 			elif unit == "cm-1":
