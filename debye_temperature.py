@@ -29,8 +29,8 @@ for line in dosfile:
 		if 'xaxis' in line and 'label' in line and '"' in line:
 			# we parse for " as it is the only thing differentiating the line with the frequency units from the line with the font
 			data = line.split()
-			unit = line[4].lstrip('(').rstrip(')"')
-
+			unit = data[4].lstrip('(').rstrip(')"')
+			
 			# determine conversation factor
 			if unit == "meV":
 				# conversion factor is 1/k_B in K/meV
