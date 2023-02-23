@@ -9,7 +9,7 @@ import numpy as np
 seed = sys.argv[1]
 
 # open dos input file
-dosfile = open("{}-dos.agr", "r")
+dosfile = open("{}-dos.agr".format(seed), "r")
 
 # set up integral
 log_moment = 0
