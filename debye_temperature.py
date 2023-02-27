@@ -62,14 +62,11 @@ for line in dosfile:
 			dos = (new_dos+prev_dos)/2
 
 			log_moment += np.log(freq)*dos*d_freq
-			integrated_dos += dos*d_freq
 
 		prev_freq = new_freq
 		prev_dos = new_dos
 
 dosfile.close()
-
-log_moment /= integrated_dos
 
 # calculate Debye frequency and temperature
 debye_frequency = np.exp((1+log_moment)/3)
