@@ -11,8 +11,10 @@ seed = sys.argv[1]
 # open dos input file
 dosfile = open("{}-dos.agr".format(seed), "r")
 
-# set up integral
+# the dos must be normalised to 1, so we divide the log moment by the integrated dos
+# set up integrals
 log_moment = 0
+integrated_dos = 0
 
 # the integral is ln(freq)*dos*d_freq
 # we use the middle between two successive points
@@ -30,7 +32,7 @@ for line in dosfile:
 			# we parse for " as it is the only thing differentiating the line with the frequency units from the line with the font
 			data = line.split()
 			unit = data[4].lstrip('(').rstrip(')"')
-			
+
 			# determine conversation factor
 			if unit == "meV":
 				# conversion factor is 1/k_B in K/meV
@@ -60,11 +62,14 @@ for line in dosfile:
 			dos = (new_dos+prev_freq)/2
 
 			log_moment += np.log(freq)*dos*d_freq
+			integrated_dos += dos*d_freq
 
 		prev_freq = new_freq
 		prev_dos = new_dos
 
 dosfile.close()
+
+log_moment /= integrated_dos
 
 # calculate Debye frequency and temperature
 debye_frequency = np.exp((1+log_moment)/3)
