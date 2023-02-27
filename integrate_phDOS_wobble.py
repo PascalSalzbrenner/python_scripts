@@ -36,7 +36,7 @@ for line in dosfile:
 		if prev_freq:
 			# only do this if we already have data from a previous step
 			d_freq = new_freq - prev_freq
-			dos = (new_dos+prev_freq)/2
+			dos = (new_dos+prev_dos)/2
 
 			integrated_dos += dos*d_freq
 

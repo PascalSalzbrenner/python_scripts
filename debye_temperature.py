@@ -59,7 +59,7 @@ for line in dosfile:
 			# only do this if we already have data from a previous step
 			d_freq = new_freq - prev_freq
 			freq = (new_freq+prev_freq)/2
-			dos = (new_dos+prev_freq)/2
+			dos = (new_dos+prev_dos)/2
 
 			log_moment += np.log(freq)*dos*d_freq
 			integrated_dos += dos*d_freq
@@ -77,4 +77,7 @@ debye_temperature = conversion_factor * debye_frequency
 
 # write output
 with open("debye_temperature.dat", "w") as outfile:
-	outfile.write("The Debye temperature of {} is {} K.".format(seed, debye_temperature))
+	outfile.write("The Debye frequency of {} is {} {}.\n".format(seed, debye_frequency, unit))
+	outfile.write("The Debye temperature, therefore, is {} K.".format(debye_temperature))
+
+
