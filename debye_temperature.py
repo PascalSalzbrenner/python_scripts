@@ -70,7 +70,7 @@ for line in dosfile:
 dosfile.close()
 
 # calculate Debye frequency and temperature
-debye_frequency = np.exp((1+log_moment)/integrated_dos)
+debye_frequency = np.exp(1/3+log_moment/integrated_dos)
 debye_temperature = conversion_factor * debye_frequency
 
 # write output
