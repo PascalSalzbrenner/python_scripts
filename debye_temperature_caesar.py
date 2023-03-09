@@ -9,7 +9,7 @@ import numpy as np
 conversion_factor = 315775.21536
 
 # open dos input file
-dosfile = open("freq-dos.dat", "r")
+dosfile = open("freq_dos.dat", "r")
 
 # the dos must be normalised to 1, so we divide the log moment by the integrated dos
 # set up integrals
