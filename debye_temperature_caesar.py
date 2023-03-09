@@ -1,16 +1,15 @@
-# script to calculate the high-temperature-entropy Debye temperature from Caesar freq_dos.agr output
+# script to calculate the high-temperature-entropy Debye temperature from Caesar freq_dos.dat output
 # Caesar uses atomic units so the frequencies are in Hartree
 # implements equation (12) from Chen, Sundman - Acta Materialia Volume 49, Issue 6, 2 April 2001, Pages 947-961 to calculate the Debye frequency
 # written by Pascal Salzbrenner, pts28@cam.ac.uk
 
-import sys
 import numpy as np
 
 # set up conversion factor - 1/kB in K/Ha
 conversion_factor = 315775.21536
 
 # open dos input file
-dosfile = open("freq-dos.agr", "r")
+dosfile = open("freq-dos.dat", "r")
 
 # the dos must be normalised to 1, so we divide the log moment by the integrated dos
 # set up integrals
