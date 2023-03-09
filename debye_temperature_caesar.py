@@ -49,6 +49,7 @@ debye_temperature = conversion_factor * debye_frequency
 
 # write output
 with open("debye_temperature.dat", "w") as outfile:
+	outfile.write("The Debye frequency is {} Hartree.\n".format(debye_frequency))
 	outfile.write("The Debye temperature, therefore, is {} K.".format(debye_temperature))
 
 
