@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from copy import deepcopy
-from numpy.polynomial import Polynomial
+from scipy import interpolate
 
 # note that the default labels in the _enthalpy.agr files are chemical_formula-structure_name
 # for consistency with the dev_press_vol files, we use only the structure_name part wherever the name of a structure is concerned
@@ -17,6 +17,8 @@ from numpy.polynomial import Polynomial
 low_press = int(sys.argv[1])
 high_press = int(sys.argv[2])
 reference_structure = sys.argv[3]
+
+press_range = high_press - low_press
 
 # check if user-supplied labels are present
 # labels.txt format:
@@ -84,8 +86,13 @@ for theory in ["DFT", "EDDP"]:
 
 					else:
 						data = data_line.split()
-						pressure.append(float(data[0]))
-						enthalpy.append(1000*float(data[1])) # convert from eV/atom to meV/atom
+
+						current_pressure = float(data[0])
+
+						if (current_pressure > low_press or np.isclose(current_pressure, low_press)) and (current_pressure < high_press or np.isclose(current_pressure, high_press)):
+
+							pressure.append(current_pressure)
+							enthalpy.append(1000*float(data[1])) # convert from eV/atom to meV/atom
 
 		else:
 			continue
@@ -106,14 +113,12 @@ for structure, pressure_enthalpy in eddp_data.items():
 			dev_pressures.append(float(data[0]))
 			deviation_list.append(float(data[2]))
 
-	deviations_n = []
-
 	# interpolate the deviations to ensure we have can access them at the pressures where we have the enthalpy data
 	# then add and subtract it from the energy itself to get the upper and lower bounds for the curve width
-	
-	deviation = Polynomial.fit(dev_pressures, deviation_list, 3)
-	deviations_p = pressure_enthalpy[1]+deviation(pressure_enthalpy[0])
-	deviations_n = pressure_enthalpy[1]-deviation(pressure_enthalpy[0])
+
+	deviation = interpolate.splrep(dev_pressures, deviation_list, s=0)
+	deviations_p = pressure_enthalpy[1]+interpolate.splev(pressure_enthalpy[0], deviation, der=0)
+	deviations_n = pressure_enthalpy[1]-interpolate.splev(pressure_enthalpy[0], deviation, der=0)
 	deviations[structure] = [pressure_enthalpy[0], deviations_p, deviations_n]
 
 # plotting
@@ -124,6 +129,21 @@ plt.xlabel("Pressure [GPa]")
 plt.ylabel("Enthalpy [meV/formula unit]")
 plt.xlim(low_press, high_press)
 
+# determine sensible tick spacing on the x-axis
+max = round(press_range/50)*5
+
+for i in range(max, 0, -1):
+
+	if press_range%i == 0:
+		tick_step = i
+		break
+
+plt.xticks(np.arange(low_press, high_press+1, tick_step))
+
+# to set a sensible enthalpy window, determine the largest and lowest enthalpies
+max_enthalpy = 0
+min_enthalpy = 0
+
 # plot zero line
 plt.plot(np.linspace(low_press, high_press, high_press-low_press+1), np.zeros(high_press-low_press+1), color="black", label=labels[reference_structure])
 
@@ -132,9 +152,32 @@ for structure, pressure_enthalpy in eddp_data.items():
 	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="solid", label="{} - EDDP".format(labels[structure]))
 	plt.fill_between(pressure_enthalpy[0], deviations[structure][1], deviations[structure][2], color=colours[structure_list.index(structure)], alpha=0.5)
 
+	# to determine the maximum (minimum) value, we need only consider the energies with positive (negative) deviation; this is guaranteed to have be higher (lower) than the actual enthalpy
+	if np.amax(deviations[structure][1]) > max_enthalpy:
+		max_enthalpy = np.amax(deviations[structure][1])
+	if np.amin(deviations[structure][2]) < min_enthalpy:
+		min_enthalpy = np.amin(deviations[structure][2])
+
 # plot DFT data
 for structure, pressure_enthalpy in dft_data.items():
 	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="dashed", label="{} - DFT".format(labels[structure]))
+
+	if np.amax(pressure_enthalpy[1]) > max_enthalpy:
+		max_enthalpy = np.amax(pressure_enthalpy[1])
+	if np.amin(pressure_enthalpy[1]) < min_enthalpy:
+		min_enthalpy = np.amin(pressure_enthalpy[1])
+
+# round maximum and minimum enthalpies to the next 10 to get y range
+y_max = round(max_enthalpy, -1)
+y_min = round(min_enthalpy, -1)
+
+# make sure the entire range is included
+if y_max < max_enthalpy:
+	y_max += 10
+if y_min > min_enthalpy:
+	y_min -= 10
+
+plt.ylim(y_min, y_max)
 
 plt.legend()
 
