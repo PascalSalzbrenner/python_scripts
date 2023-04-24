@@ -13,8 +13,9 @@ from numpy.polynomial import Polynomial
 # note that the default labels in the _enthalpy.agr files are chemical_formula-structure_name
 # for consistency with the dev_press_vol files, we use only the structure_name part wherever the name of a structure is concerned
 
-low_press = sys.argv[1]
-high_press = sys.argv[2]
+# we convert to int, there is no good reason really to start at fractional pressures, and int makes things cleaner
+low_press = int(sys.argv[1])
+high_press = int(sys.argv[2])
 reference_structure = sys.argv[3]
 
 # check if user-supplied labels are present
@@ -39,7 +40,7 @@ structure_list = []
 
 for theory in ["DFT", "EDDP"]:
 
-	inile = open("{}_enthalpy.agr".format(theory), "r")
+	infile = open("{}_enthalpy.agr".format(theory), "r")
 
 	for line in infile:
 
@@ -76,9 +77,9 @@ for theory in ["DFT", "EDDP"]:
 					if data_line.startswith("&"):
 						# "&" marks the end of a data block
 						if theory == "DFT":
-							dft_data[structure_name] = [np.array(deecopy(pressure)), np.array(deepcopy(enthalpy))]
+							dft_data[structure_name] = [np.array(deepcopy(pressure)), np.array(deepcopy(enthalpy))]
 						else:
-							eddp_data[structure_name] = [np.array(deecopy(pressure)), np.array(deepcopy(enthalpy))]
+							eddp_data[structure_name] = [np.array(deepcopy(pressure)), np.array(deepcopy(enthalpy))]
 						break
 
 					else:
@@ -101,7 +102,7 @@ for structure, pressure_enthalpy in eddp_data.items():
 	with open("dev_press_vol_{}.txt".format(structure), "r") as dev_file:
 		dev_file.readline()
 		for line in dev_file:
-			data = dev_file.split()
+			data = line.split()
 			dev_pressures.append(float(data[0]))
 			deviation_list.append(float(data[2]))
 
@@ -111,8 +112,8 @@ for structure, pressure_enthalpy in eddp_data.items():
 	# then add and subtract it from the energy itself to get the upper and lower bounds for the curve width
 	
 	deviation = Polynomial.fit(dev_pressures, deviation_list, 3)
-	deviations_p = pressure_enthalpy[1]+deviation[pressure_enthalpy[0]]
-	deviations_n = pressure_enthalpy[1]-deviation[pressure_enthalpy[0]]
+	deviations_p = pressure_enthalpy[1]+deviation(pressure_enthalpy[0])
+	deviations_n = pressure_enthalpy[1]-deviation(pressure_enthalpy[0])
 	deviations[structure] = [pressure_enthalpy[0], deviations_p, deviations_n]
 
 # plotting
@@ -130,7 +131,7 @@ plt.plot(np.linspace(low_press, high_press, high_press-low_press+1), np.zeros(hi
 # plot EDDP data
 for structure, pressure_enthalpy in eddp_data.items():
 	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="solid", label="{} - EDDP".format(labels[structure]))
-	plt.fill_betweem(pressure_enthalpy[0], deviations[structure][1], deviations[structure][2], color=colours[structure_list.index(structure)], alpha=0.5)
+	plt.fill_between(pressure_enthalpy[0], deviations[structure][1], deviations[structure][2], color=colours[structure_list.index(structure)], alpha=0.5)
 
 
 # plot DFT data
