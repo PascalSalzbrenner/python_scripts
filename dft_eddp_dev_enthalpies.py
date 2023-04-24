@@ -120,7 +120,6 @@ for structure, pressure_enthalpy in eddp_data.items():
 # define colour list
 colours = ["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF", "#1B9E77", "#20C2C2", "#D95F02", "#DC143C"]
 
-plt.legend()
 plt.xlabel("Pressure [GPa]")
 plt.ylabel("Enthalpy [meV/formula unit]")
 plt.xlim(low_press, high_press)
@@ -133,10 +132,11 @@ for structure, pressure_enthalpy in eddp_data.items():
 	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="solid", label="{} - EDDP".format(labels[structure]))
 	plt.fill_between(pressure_enthalpy[0], deviations[structure][1], deviations[structure][2], color=colours[structure_list.index(structure)], alpha=0.5)
 
-
 # plot DFT data
 for structure, pressure_enthalpy in dft_data.items():
 	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="dashed", label="{} - DFT".format(labels[structure]))
+
+plt.legend()
 
 plt.savefig("dft_eddp_dev_enthalpies.png", dpi=300)
 #plt.savefig("dft_eddp_dev_enthalpies.pdf")
