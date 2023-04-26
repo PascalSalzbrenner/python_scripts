@@ -104,7 +104,7 @@ if task.startswith("d"):
     if coexistence:
         filename = build_reduced_xyz_file(fileroot, first_atom, last_atom)
     else:
-        filename = input_filename
+        filename = "{}.xyz".format(fileroot)
 
     time_step = float(input("What was the time step between images in {}? [fs] ".format(filename)))
     num_segments = int(input("Into how many segments (for the purpose of averaging) would you like to split the data? "))
