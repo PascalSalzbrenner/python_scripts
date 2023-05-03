@@ -19,10 +19,10 @@ structures = ["dimer", "sc", "bcc", "fcc", "dc", "gh"]
 labels_dict = {"bcc": "Bcc", "dc": "Diamond", "dimer": "Dimer", "fcc": "Fcc", "gh": "Graphene", "sc": "Simple cubic"}
 
 # get xmin, xmax, ymin, ymax from commandline
-xmin = sys.argv[1]
-xmax = sys.argv[2]
-ymin = sys.argv[3]
-ymax = sys.argv[4]
+xmin = float(sys.argv[1])
+xmax = float(sys.argv[2])
+ymin = float(sys.argv[3])
+ymax = float(sys.argv[4])
 
 # read element name
 with open("elements.dat", "r") as element_file:
@@ -45,5 +45,7 @@ for i in range(len(structures)):
 
 	plt.plot(eddp_distance, eddp_energy, color=colours[i], linestyle="solid", label=labels_dict[structures[i]])
 	plt.scatter(dft_distance, dft_energy, c=colours[i], marker=".", alpha=0.5)
+
+plt.legend()
 
 plt.savefig("eddp_pes_w_dft.png", dpi=300)
