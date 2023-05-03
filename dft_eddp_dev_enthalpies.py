@@ -36,9 +36,9 @@ else:
 	labels[reference_structure] = reference_structure
 
 # read input data
-dft_data = {}
-eddp_data = {}
-structure_list = []
+dft_data = {reference_structure: [np.linspace(low_press, high_press, high_press-low_press+1), np.zeros(high_press-low_press+1)]}
+eddp_data = {reference_structure: [np.linspace(low_press, high_press, high_press-low_press+1), np.zeros(high_press-low_press+1)]}
+structure_list = [reference_structure]
 
 for theory in ["DFT", "EDDP"]:
 
@@ -144,12 +144,15 @@ plt.xticks(np.arange(low_press, high_press+1, tick_step))
 max_enthalpy = 0
 min_enthalpy = 0
 
-# plot zero line
-plt.plot(np.linspace(low_press, high_press, high_press-low_press+1), np.zeros(high_press-low_press+1), color="black", label=labels[reference_structure])
-
 # plot EDDP data
 for structure, pressure_enthalpy in eddp_data.items():
-	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="solid", label="{} - EDDP".format(labels[structure]))
+
+	if structure == reference_structure:
+		struc_label = labels[structure]
+	else:
+		struc_label = "{} - EDDP".format(labels[structure])
+
+	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="solid", label=struc_label)
 	plt.fill_between(pressure_enthalpy[0], deviations[structure][1], deviations[structure][2], color=colours[structure_list.index(structure)], alpha=0.5)
 
 	# to determine the maximum (minimum) value, we need only consider the energies with positive (negative) deviation; this is guaranteed to have be higher (lower) than the actual enthalpy
@@ -160,6 +163,10 @@ for structure, pressure_enthalpy in eddp_data.items():
 
 # plot DFT data
 for structure, pressure_enthalpy in dft_data.items():
+
+	if structure == reference_structure:
+		continue
+
 	plt.plot(pressure_enthalpy[0], pressure_enthalpy[1], color=colours[structure_list.index(structure)], linestyle="dashed", label="{} - DFT".format(labels[structure]))
 
 	if np.amax(pressure_enthalpy[1]) > max_enthalpy:
