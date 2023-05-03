@@ -40,8 +40,8 @@ for i in range(len(structures)):
 	eddp_energy = np.array(eddp_df["energy(eV/atom)"])
 
 	dft_df = pd.read_csv("../DFT/pes-{}-{}/pes.csv".format(element_name, structures[i]))
-	dft_distance = np.array(eddp_df["distance(A)"])
-	dft_energy = np.array(eddp_df["energy(eV/atom)"])
+	dft_distance = np.array(dft_df["distance(A)"])
+	dft_energy = np.array(dft_df["energy(eV/atom)"])
 
 	plt.plot(eddp_distance, eddp_energy, color=colours[i], linestyle="solid", label=labels_dict[structures[i]])
 	plt.scatter(dft_distance, dft_energy, c=colours[i], marker=".", alpha=0.5)
