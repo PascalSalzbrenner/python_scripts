@@ -36,12 +36,12 @@ plt.ylim(ymin, ymax)
 
 for i in range(len(structures)):
 	eddp_df = pd.read_csv("pes-{}-{}/pes.csv".format(element_name, structures[i]))
-	eddp_distance = np.array(eddp_df("distance(A)"))
-	eddp_energy = np.array(eddp_df("energy(eV/atom)"))
+	eddp_distance = np.array(eddp_df["distance(A)"])
+	eddp_energy = np.array(eddp_df["energy(eV/atom)"])
 
 	dft_df = pd.read_csv("../DFT/pes-{}-{}/pes.csv".format(element_name, structures[i]))
-	dft_distance = np.array(eddp_df("distance(A)"))
-	dft_energy = np.array(eddp_df("energy(eV/atom)"))
+	dft_distance = np.array(eddp_df["distance(A)"])
+	dft_energy = np.array(eddp_df["energy(eV/atom)"])
 
 	plt.plot(eddp_distance, eddp_energy, color=colours[i], linestyle=solid, label=labels_dict(structures[i]))
 	plt.scatter(dft_distance, dft_energy, c=colours[i], marker=".", alpha=0.5)
