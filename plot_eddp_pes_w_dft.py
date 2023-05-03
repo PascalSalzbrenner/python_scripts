@@ -16,7 +16,7 @@ colours = ["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF"]
 
 # define structure list & the corresponding labels
 structures = ["dimer", "sc", "bcc", "fcc", "dc", "gh"]
-labels_dict = {"bcc": "Bcc", "dc": "Diamond", "dimer": "Dimer", "fcc": "Fcc", "gh": "Graphene", "sc": "Simple cubic"}
+labels_dict = {"bcc": "$\it{bcc}$", "dc": "Diamond", "dimer": "Dimer", "fcc": "$\it{fcc}$", "gh": "Graphene", "sc": "Simple cubic"}
 
 # get xmin, xmax, ymin, ymax from commandline
 xmin = float(sys.argv[1])
