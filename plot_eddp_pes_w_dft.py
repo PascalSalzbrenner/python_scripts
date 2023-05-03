@@ -16,7 +16,7 @@ colours = ["#E6AB02", "#66A61E", "#8000C4", "#7570B3", "#E7298A", "#1E90FF"]
 
 # define structure list & the corresponding labels
 structures = ["dimer", "sc", "bcc", "fcc", "dc", "gh"]
-labels_dict = {"bbc": "Bcc", "dc": "Diamond", "dimer": "Dimer", "fcc": "Fcc", "gh": "Graphene", "sc": "Simple cubic"}
+labels_dict = {"bcc": "Bcc", "dc": "Diamond", "dimer": "Dimer", "fcc": "Fcc", "gh": "Graphene", "sc": "Simple cubic"}
 
 # get xmin, xmax, ymin, ymax from commandline
 xmin = sys.argv[1]
@@ -43,7 +43,7 @@ for i in range(len(structures)):
 	dft_distance = np.array(eddp_df["distance(A)"])
 	dft_energy = np.array(eddp_df["energy(eV/atom)"])
 
-	plt.plot(eddp_distance, eddp_energy, color=colours[i], linestyle=solid, label=labels_dict(structures[i]))
+	plt.plot(eddp_distance, eddp_energy, color=colours[i], linestyle="solid", label=labels_dict[structures[i]])
 	plt.scatter(dft_distance, dft_energy, c=colours[i], marker=".", alpha=0.5)
 
 plt.savefig("eddp_pes_w_dft.png", dpi=300)
