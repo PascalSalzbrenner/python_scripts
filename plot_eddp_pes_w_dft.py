@@ -28,7 +28,7 @@ ymax = float(sys.argv[4])
 with open("elements.dat", "r") as element_file:
 	element_name = element_file.readline().split()[0]
 
-plt.xlabel("Interatomic Distance [A]")
+plt.xlabel("Nearest-neighbour Distance [A]")
 plt.ylabel("Energy [eV/atom]")
 
 plt.xlim(xmin, xmax)
