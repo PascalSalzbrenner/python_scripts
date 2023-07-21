@@ -342,7 +342,7 @@ for structure in struc_temp_input_data.keys():
             pressure_file.write("# static-lattice pressure [GPa]; vibration-corrected pressure [GPa]\n")
 
             # copy over the files we have operated on, with the correct pressure replacing that of the static lattice
-            for i in range(len(structure_files)):
+            for i in range(len(files_dict[structure])):
                 # the structure_files and pressures lists will be of the same length, and the elements in the same place will correspond to one another
                 pressure_file.write("{} {}\n".format(static_pressures[i], pressures[i]))
 
