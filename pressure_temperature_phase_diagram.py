@@ -399,7 +399,8 @@ for temperature in temp_list:
         # sometimes a bit of error accumulates when adding the pressure increment, which can lead to the last step being slightly larger than final_pressure
         # that's why we compare to a number slightly larger than final_pressure, but strictly smaller than final_pressure + pressure_increment
 
-        if len(pressure_list) < round(((final_pressure-initial_pressure)/pressure_increment)+1):
+        if temp_list.index(temperature) == 0:
+            # only add the pressures to the list once
             pressure_list.append(initial_pressure_copy)
         
         energies = []
