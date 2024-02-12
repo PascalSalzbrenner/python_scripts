@@ -1,19 +1,34 @@
-# script to calculate the high-temperature-entropy Debye temperature from wobble seed-dos.agr output
-# implements equation (12) from Chen, Sundman - Acta Materialia Volume 49, Issue 6, 2 April 2001, Pages 947-961 to calculate the Debye frequency
+# script to calculate the Debye temperature from wobble seed-dos.agr output
+# implements equations 6.33 and 6.34 from G. Grimvall - Thermophysical Properties of Materials
+# allows the calculation of the Debye frequency from arbitrary frequency moments
 # written by Pascal Salzbrenner, pts28@cam.ac.uk
 
 import sys
 import numpy as np
 
+# define function to integrate for the calculation of different moments
+def moment_function(freq, n):
+	"""The moment of the frequency which is used"""
+
+	if n < -3:
+		raise(ValueError, "Moments smaller than -3 cannot be calculated.")
+	elif n == 0:
+		return np.log(freq)
+	else:
+		return freq**n
+
 # read seed
 seed = sys.argv[1]
+
+# read moment
+moment_index = sys.argv[2]
 
 # open dos input file
 dosfile = open("{}-dos.agr".format(seed), "r")
 
 # the dos must be normalised to 1, so we divide the log moment by the integrated dos
 # set up integrals
-log_moment = 0
+frequency_moment = 0
 integrated_dos = 0
 
 # the integral is ln(freq)*dos*d_freq
@@ -61,7 +76,7 @@ for line in dosfile:
 			freq = (new_freq+prev_freq)/2
 			dos = (new_dos+prev_dos)/2
 
-			log_moment += np.log(freq)*dos*d_freq
+			frequency_moment += moment_function(freq, moment_index)*dos*d_freq
 			integrated_dos += dos*d_freq
 
 		prev_freq = new_freq
@@ -70,11 +85,15 @@ for line in dosfile:
 dosfile.close()
 
 # calculate Debye frequency and temperature
-debye_frequency = np.exp(1/3+log_moment/integrated_dos)
+if moment_index == 0:
+	debye_frequency = np.exp(1/3+frequency_moment/integrated_dos)
+else:
+	debye_frequency = ((frequency_moment/integrated_dos)*(moment_index+3)/3)**(1/moment_index)
+
 debye_temperature = conversion_factor * debye_frequency
 
 # write output
-with open("debye_temperature.dat", "w") as outfile:
+with open("debye_temperature_{}_moment.dat".format(moment_index), "w") as outfile:
 	outfile.write("The Debye frequency of {} is {} {}.\n".format(seed, debye_frequency, unit))
 	outfile.write("The Debye temperature, therefore, is {} K.".format(debye_temperature))
 
