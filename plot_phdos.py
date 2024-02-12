@@ -1,6 +1,6 @@
 # script to plot the phonon densities of states from the following sources: wobble (EDDP), Caesar (DFT), as well as the associated Debye spectra
-# Debye spectra are those associated with the high-temperature-entropy Debye frequency
-# this is calculated from equation 6.34 of G. Grimvall - Thermophysical Properties of Materials to calculate the Debye frequency
+# Debye spectra are those associated with a user-selected Debye frequency
+# this is calculated from equations 6.34 and 6.35 of G. Grimvall - Thermophysical Properties of Materials
 # we normalise all the DOSes to 1
 # output plot is always in meV
 
@@ -11,25 +11,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # define function to integrate DOS and log moment
-def integrate_dos_log_moment(freq, dos):
+def integrate_dos_frequency_moment(freq, dos, n):
     integrated_dos = 0
-    log_moment = 0
+    frequency_moment = 0
     for i in range(len(freq)-1):
         d_freq = freq[i+1] - freq[i]
         freq_mean = (freq[i+1]+freq[i])/2
         dos_mean = (dos[i+1]+dos[i])/2
 
         integrated_dos += dos_mean*d_freq
-        log_moment += np.log(freq_mean)*dos_mean*d_freq
 
-    return integrated_dos, log_moment
+        if n < -2:
+            raise(ValueError, "Moments smaller than -3 cannot be calculated.")
+        elif n == 0:
+            frequency_moment += np.log(freq_mean)*dos_mean*d_freq
+        else:
+            frequency_moment += (freq_mean**n)*dos_mean*d_freq
+
+    return integrated_dos, frequency_moment
 
 # read seed
 seed = sys.argv[1]
 
+# read moment index
+moment_index = int(sys.argv[2])
+
 # set up log moment integrals for Debye frequency calculation
-wobble_log_moment = 0
-caesar_log_moment = 0
+wobble_frequency_moment = 0
+caesar_frequency_moment = 0
 
 # set up dos integrals for normalisation
 wobble_integrated_dos = 0
@@ -79,11 +88,14 @@ with open("{}-dos.agr".format(seed), "r") as dosfile:
 
 # calculate and normalise DOS
 wobble_freq = np.array(wobble_freq)
-wobble_integrated_dos, wobble_log_moment = integrate_dos_log_moment(wobble_freq, wobble_dos)
+wobble_integrated_dos, wobble_frequency_moment = integrate_dos_frequency_moment(wobble_freq, wobble_dos, moment_index)
 wobble_dos = np.array(wobble_dos)/wobble_integrated_dos
 
 # calculate Debye frequency
-wobble_debye_frequency = np.exp(1/3+wobble_log_moment/wobble_integrated_dos)
+if moment_index == 0:
+    wobble_debye_frequency = np.exp(1/3+wobble_frequency_moment/wobble_integrated_dos)
+else:
+    wobble_debye_frequency = ((wobble_frequency_moment/wobble_integrated_dos)*(moment_index+3)/3)**(1/moment_index)
 
 ##### Caesar #####
 
@@ -107,15 +119,18 @@ with open("{}-freq_dos.dat".format(seed), "r") as dosfile:
             dos = (caesar_dos[-1]+caesar_dos[-2])/2
 
             caesar_integrated_dos += dos*d_freq
-            caesar_log_moment += np.log(freq)*dos*d_freq
+            caesar_frequency_moment += np.log(freq)*dos*d_freq
 
 # calculate and normalise DOS
 caesar_freq = np.array(caesar_freq)
-caesar_integrated_dos, caesar_log_moment = integrate_dos_log_moment(caesar_freq, caesar_dos)
+caesar_integrated_dos, caesar_frequency_moment = integrate_dos_frequency_moment(caesar_freq, caesar_dos, moment_index)
 caesar_dos = np.array(caesar_dos)/caesar_integrated_dos
 
 # calculate Debye frequency
-caesar_debye_frequency = np.exp(1/3+caesar_log_moment/caesar_integrated_dos)
+if moment_index == 0:
+    caesar_debye_frequency = np.exp(1/3+caesar_frequency_moment/caesar_integrated_dos)
+else:
+    caesar_debye_frequency = ((caesar_frequency_moment/caesar_integrated_dos)*(moment_index+3)/3)**(1/moment_index)
 
 ##### plot #####
 
