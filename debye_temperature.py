@@ -10,8 +10,8 @@ import numpy as np
 def moment_function(freq, n):
 	"""The moment of the frequency which is used"""
 
-	if n < -3:
-		raise(ValueError, "Moments smaller than -3 cannot be calculated.")
+	if n < -2:
+		raise(ValueError, "Moments smaller than -2 cannot be calculated.")
 	elif n == 0:
 		return np.log(freq)
 	else:
@@ -20,13 +20,13 @@ def moment_function(freq, n):
 # read seed
 seed = sys.argv[1]
 
-# read moment
-moment_index = sys.argv[2]
+# read moment index
+moment_index = int(sys.argv[2])
 
 # open dos input file
 dosfile = open("{}-dos.agr".format(seed), "r")
 
-# the dos must be normalised to 1, so we divide the log moment by the integrated dos
+# the dos must be normalised to 1, so we divide the moment by the integrated dos
 # set up integrals
 frequency_moment = 0
 integrated_dos = 0

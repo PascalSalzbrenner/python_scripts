@@ -20,10 +20,13 @@ def moment_function(freq, n):
 # set up conversion factor - 1/kB in K/Ha
 conversion_factor = 315775.21536
 
+# read moment index
+moment_index = int(input("Which moment would you like to calculate (n > -3)? "))
+
 # open dos input file
 dosfile = open("freq_dos.dat", "r")
 
-# the dos must be normalised to 1, so we divide the log moment by the integrated dos
+# the dos must be normalised to 1, so we divide the moment by the integrated dos
 # set up integrals
 frequency_moment = 0
 integrated_dos = 0
