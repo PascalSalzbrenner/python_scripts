@@ -10,6 +10,20 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+# define function to integrate DOS and log moment
+def integrate_dos_log_moment(freq, dos):
+    integrated_dos = 0
+    log_moment = 0
+    for i in range(len(freq)-1):
+        d_freq = freq[i+1] - freq[i]
+        freq_mean = (freq[i+1]+freq[i])/2
+        dos_mean = (dos[i+1]+dos[i])/2
+
+        integrated_dos += dos_mean*d_freq
+        log_moment += np.log(freq_mean)*dos_mean*d_freq
+
+    return integrated_dos, log_moment
+
 # read seed
 seed = sys.argv[1]
 
@@ -63,17 +77,9 @@ with open("{}-dos.agr".format(seed), "r") as dosfile:
             wobble_freq.append(float(data[0])*conversion_factor)
             wobble_dos.append(float(data[1]))
 
-            # only do this if we have at least two data points
-            if len(wobble_freq) > 1:
-                d_freq = wobble_freq[-1] - wobble_freq[-2]
-                freq = (wobble_freq[-1]+wobble_freq[-2])/2
-                dos = (wobble_dos[-1]+wobble_dos[-2])/2
-
-                wobble_integrated_dos += dos*d_freq
-                wobble_log_moment += np.log(freq)*dos*d_freq
-
-# normalise DOS
+# calculate and normalise DOS
 wobble_freq = np.array(wobble_freq)
+wobble_integrated_dos, wobble_log_moment = integrate_dos_log_moment(wobble_freq, wobble_dos)
 wobble_dos = np.array(wobble_dos)/wobble_integrated_dos
 
 # calculate Debye frequency
@@ -103,7 +109,9 @@ with open("{}-freq_dos.dat".format(seed), "r") as dosfile:
             caesar_integrated_dos += dos*d_freq
             caesar_log_moment += np.log(freq)*dos*d_freq
 
-# normalise DOS
+# calculate and normalise DOS
+caesar_freq = np.array(caesar_freq)
+caesar_integrated_dos, caesar_log_moment = integrate_dos_log_moment(caesar_freq, caesar_dos)
 caesar_dos = np.array(caesar_dos)/caesar_integrated_dos
 
 # calculate Debye frequency
