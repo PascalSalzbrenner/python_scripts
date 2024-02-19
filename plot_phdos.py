@@ -144,10 +144,10 @@ def debye_dos(w, omega_D):
 wobble_debye_dos = [debye_dos(w, wobble_debye_frequency) for w in wobble_freq]
 caesar_debye_dos = [debye_dos(w, caesar_debye_frequency) for w in caesar_freq]
 
-plt.plot(wobble_freq, wobble_dos, label="EDDP - SOC", color="#E6AB02", linestyle="solid")
+plt.plot(wobble_freq, wobble_dos, label="EDDP", color="#E6AB02", linestyle="solid")
 plt.plot(wobble_freq, wobble_debye_dos, label="EDDP - Debye", color="#E6AB02", linestyle="dashed")
 
-plt.plot(caesar_freq, caesar_dos, label="DFT - SOC", color="#66A61E", linestyle="solid")
+plt.plot(caesar_freq, caesar_dos, label="DFT", color="#66A61E", linestyle="solid")
 plt.plot(caesar_freq, caesar_debye_dos, label="DFT - Debye", color="#66A61E", linestyle="dashed")
 
 plt.xlabel("Frequency (meV)")
