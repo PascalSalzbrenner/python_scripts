@@ -5,6 +5,7 @@
 
 # written by Pascal Salzbrenner, pts28@cam.ac.uk
 
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -25,6 +26,12 @@ def poly_equation(kx, ky, kz):
     d = m11*m22*m33 + 2*m12*m13*m23 - m12*m12*m33 - m13*m13*m22 - m23*m23*m11
 
     return Polynomial([d, c, b, -1])
+
+# implement scale factor for the frequencies
+if len(sys.argv) == 1:
+    scale_factor = 1
+else:
+    scale_factor = float(sys.argv[1])
 
 # define dictionary of high-symmetry k-points
 hsp = {"G": np.array([0, 0, 0]), "X": np.array([2*np.pi, 0, 0]), "L": np.array([np.pi, np.pi, np.pi]), "W": np.array([2*np.pi, np.pi, 0]), "U": np.array([2*np.pi, np.pi, np.pi]), "K": np.array([3*np.pi/2, 3*np.pi/2, 0])}
@@ -105,9 +112,14 @@ for i in range(len(k_path)-1):
         k_linear.append(np.linalg.norm(k - k1) + offset)
 
         # append the frequencies to the list
-        omega1.append(np.sqrt(r[0]))
-        omega2.append(np.sqrt(r[1]))
-        omega3.append(np.sqrt(r[2]))
+        omega1.append(scale_factor*np.sqrt(r[0]))
+        omega2.append(scale_factor*np.sqrt(r[1]))
+        omega3.append(scale_factor*np.sqrt(r[2]))
+
+# write data to file
+with open("fcc_phonon_dispersion.dat", "w") as f:
+    for i in range(len(k_linear)):
+        f.write(f"{k_linear[i]} {omega1[i]} {omega2[i]} {omega3[i]}\n")
 
 # plot the phonon dispersion
 colour = "#8000C4"
@@ -121,7 +133,7 @@ plt.plot(k_linear, omega3, color=colour)
 plt.xticks([])
 
 plt.xlim(hsp_linear[0][0], hsp_linear[-1][0])
-plt.ylim(0, 3)
+plt.ylim(bottom=0)
 
 # y-axis label
 plt.ylabel(r'$\sqrt{\frac{M}{C}}\omega$', fontsize=15)
