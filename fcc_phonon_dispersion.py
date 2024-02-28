@@ -68,7 +68,7 @@ for i in range(len(k_path)-1):
     hsp_linear.append([offset, k_path[i]])
 
     # define the number of points between the k-points
-    n = 1000
+    n = 10000
 
     # loop over the points between the k-points
     for j in range(n):
