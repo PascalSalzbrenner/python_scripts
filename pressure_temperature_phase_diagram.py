@@ -120,9 +120,11 @@ pressure_conversion = 160.21766208
 # hardcode polynomial rank, but can be easily changed here
 rank = 5
 
-# hardcode step size for writing out the pressure-volume data as well as temperatures, can again be changed easily here
-pressure_increment = 0.01
+# hardcode step size for writing out the temperatures, can again be changed easily here
 t_step = 5
+
+# pressure increment set to None, will be set below
+pressure_increment = None
 
 # dictionaries to contain the temperature - pressure / volume - energy data for each structure, input as well as output
 struc_temp_input_data = {}
@@ -310,6 +312,10 @@ for structure in struc_temp_input_data.keys():
 
         initial_pressure = static_pressures[-1]
         final_pressure = static_pressures[0]
+
+        if not pressure_increment:
+            # set the pressure increment such that 10 000 steps are used to interpolate
+            pressure_increment = 0.0001 * (final_pressure - initial_pressure)
 
         # out data every 100 K - should be sufficient to interpolate if I ever need it in a different script
         if np.isclose(float(temperature) % 100, 0):

@@ -23,8 +23,8 @@ pressure_conversion = 160.21766208
 # hardcode polynomial rank, but can be easily changed here
 rank = 5
 
-# hardcode step size for writing out the pressure-volume data, can again be changed easily here
-pressure_increment = 0.01
+# pressure increment set to None, will be set below
+pressure_increment = None
 
 # read the reference structure - this must agree with the structure_name
 reference_structure = sys.argv[1]
@@ -229,11 +229,15 @@ for structure, structure_files in files_dict.items():
         else:
             initial_pressure = reference_pressures[0]
 
-        # determine starting pressure - the lower of the highest pressure for the reference structure and that of the current one
+        # determine final pressure - the lower of the highest pressure for the reference structure and that of the current one
         if pressures[-1] <= reference_pressures[-1]:
             final_pressure = pressures[-1]
         else:
             final_pressure = reference_pressures[-1]
+
+        if not pressure_increment:
+            # set the pressure increment such that 10 000 steps are used to interpolate
+            pressure_increment = 0.0001 * (final_pressure - initial_pressure)
 
         pressure_energy_file = open("phonon_pressure_energy_{}.dat".format(structure), "w")
 
