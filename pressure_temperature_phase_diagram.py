@@ -126,6 +126,10 @@ t_step = 5
 # pressure increment set to None, will be set below
 pressure_increment = None
 
+# set smallest initial and largest final pressure to None, will be set below
+smallest_initial_pressure = None
+largest_final_pressure = None
+
 # dictionaries to contain the temperature - pressure / volume - energy data for each structure, input as well as output
 struc_temp_input_data = {}
 struc_temp_pressure_energy_fits = {}
@@ -313,6 +317,17 @@ for structure in struc_temp_input_data.keys():
         initial_pressure = static_pressures[-1]
         final_pressure = static_pressures[0]
 
+        # set smallest initial and largest final pressures for plotting
+        if not smallest_initial_pressure:
+            smallest_initial_pressure = initial_pressure
+        elif initial_pressure < smallest_initial_pressure:
+            smallest_initial_pressure = initial_pressure
+
+        if not largest_final_pressure:
+            largest_final_pressure = final_pressure
+        elif final_pressure > largest_final_pressure:
+            largest_final_pressure = final_pressure
+
         if not pressure_increment:
             # set the pressure increment such that 10 000 steps are used to interpolate
             pressure_increment = 0.0001 * (final_pressure - initial_pressure)
@@ -399,9 +414,9 @@ pressure_list = []
 
 for temperature in temp_list:
 
-    initial_pressure_copy = initial_pressure
+    initial_pressure_copy = smallest_initial_pressure
 
-    while initial_pressure_copy < final_pressure + 0.1 * pressure_increment:
+    while initial_pressure_copy < largest_final_pressure + 0.1 * pressure_increment:
         # sometimes a bit of error accumulates when adding the pressure increment, which can lead to the last step being slightly larger than final_pressure
         # that's why we compare to a number slightly larger than final_pressure, but strictly smaller than final_pressure + pressure_increment
 
@@ -605,20 +620,15 @@ plt.pcolormesh(pressure_list,temp_list_numbers,minimum_index_array, cmap=cmap, v
 
 # plot phase boundaries
 
-# determine maximum temperature and pressure to set nice upper boundaries for the plot
+# determine maximum temperature to set nice upper boundaries for the plot
 # set low starting values
-max_press = 0
 max_temp = 0
 
 for index_str, pt_line in split_phase_transition_points.items():
 
-    # check if we have found new maximum values
-    current_max = np.amax(pt_line, axis=0)
-    current_max_press = current_max[0]
-    current_max_temp = current_max[1]
+    # check if we have found a new maximum value
+    current_max_temp = np.amax(pt_line, axis=0)[1]
 
-    if current_max_press > max_press:
-        max_press = current_max_press
     if current_max_temp > max_temp:
         max_temp = current_max_temp
 
@@ -632,7 +642,7 @@ for index_str, pt_line in split_phase_transition_points.items():
 if "melt_curve.dat" in ls_top:
     x_limits = [int(min(melt_pressures)), int(max(melt_pressures))]
 else:
-    x_limits = [0, round_to_nearest_larger_five(max_press)]
+    x_limits = [round_to_nearest_larger_five(smallest_initial_pressure), round_to_nearest_larger_five(largest_final_pressure)]
 y_limits = [0, round_to_nearest_larger_five(max_temp)]
 
 plt.xlim(x_limits[0], x_limits[1])
