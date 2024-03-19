@@ -62,6 +62,10 @@ energies = {"static": []}
 with open("static_lattice/energy.txt", "r") as energyfile:
 
     for line in energyfile:
+        # skip comment lines
+        if line.startswith("#"):
+            continue
+
         data = line.split()
         lattice_parameters.append(data[0]) # lattice constant
         volumes.append(float(data[1])) # volume
@@ -117,17 +121,13 @@ renorm_factor = energies["T_{}K".format(highest_T)][0]
 
 paramfile = open("birch_murnaghan_eos_parameters.txt", "w")
 minfile = open("minimum_energy.txt", "w") # file containing the minimum energy at each temperature and the corresponding volume and lattice parameter
-plotfile = open("energy_volume_temperature.gnu", "w") # gnuplot file to plot fit
+plotfile = open("energy_volume.gnu", "w") # gnuplot file to plot fit
 
 minfile.write("#T [K], a [A], V_0 [A^3], E_0 [{}]\n".format(units))
 
-plotfile.write("set terminal postscript eps colour font 'Helvetica,20'\n")
+plotfile.write("set terminal postscript eps colour\n")
 plotfile.write("set style data points\n")
-plotfile.write("set output '| epstopdf --filter --outfile=energy_volume_temperature.pdf'\n")
-
-if plot_step:
-    plotfile.write("set key top right\n")
-    plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque font 'Helvetica,15'\n")
+plotfile.write("set output '| epstopdf --filter --outfile=energy_volume.pdf'\n")
 
 # redefine gnuplot linetypes with nice colours
 plotfile.write("set linetype 1 lc rgb '#DC143C'\n")
@@ -138,8 +138,8 @@ plotfile.write("set linetype 5 lc rgb '#E6AB02'\n")
 plotfile.write("set linetype 6 lc rgb '#E6AB02'\n")
 plotfile.write("set linetype 7 lc rgb '#66A61E'\n")
 plotfile.write("set linetype 8 lc rgb '#66A61E'\n")
-plotfile.write("set linetype 9 lc rgb '#8000C4'\n")
-plotfile.write("set linetype 10 lc rgb '#8000C4'\n")
+plotfile.write("set linetype 9 lc rgb '#191970'\n")
+plotfile.write("set linetype 10 lc rgb '#191979'\n")
 plotfile.write("set linetype 11 lc rgb '#7570B3'\n")
 plotfile.write("set linetype 12 lc rgb '#7570B3'\n")
 plotfile.write("set linetype 13 lc rgb '#E7298A'\n")
@@ -150,9 +150,7 @@ plotfile.write("set linetype 17 lc rgb '#1B9E77'\n")
 plotfile.write("set linetype 18 lc rgb '#1B9E77'\n")
 plotfile.write("set linetype 19 lc rgb '#B8860B'\n")
 plotfile.write("set linetype 20 lc rgb '#B8860B'\n")
-plotfile.write("set linetype 21 lc rgb '#20C2C2'\n")
-plotfile.write("set linetype 22 lc rgb '#20C2C2'\n")
-plotfile.write("set linetype cycle 22\n")
+plotfile.write("set linetype cycle 20\n")
 
 plotfile.write("set xlabel 'Volume [A^3]'\n")
 plotfile.write("set ylabel 'Energy [{}]'\n".format(units))
@@ -177,7 +175,7 @@ for temperature, energy in energies.items():
     paramfile.write("B_0 = {} {}/A^3 = {} GPa\n".format(parameters[2], units, parameters[2]*160.21766208/factor)) #conversion (m)eV/A^3 to GPa
     paramfile.write("B_prime = {} [dimensionless]\n\n".format(parameters[3]))
 
-    minfile.write("{} {} {} {}\n".format(temperature, (prefactor*np.abs(parameters[1]))**(1.0/3.0), parameters[1], parameters[0]))
+    minfile.write("{} {} {} {}\n".format(temperature, (0.5*np.abs(parameters[1]))**(1.0/3.0), parameters[1], parameters[0]))
 
     # write temperature-dependent variables
     if plot_step:
@@ -188,7 +186,7 @@ for temperature, energy in energies.items():
             plotfile.write("B_prime_{} = {}\n".format(temperature, parameters[3]))
             plotfile.write("birch_murnaghan_eos_{0}(x) = E_0_{0} + 9.0*V_0_{0}*B_0_{0}/(16.0)*(((V_0_{0}/x)**(2.0/3.0)-1)**(3)*B_prime_{0} + ((V_0_{0}/x)**(2.0/3.0)-1)**(2)*(6-4*(V_0_{0}/x)**(2.0/3.0)))\n".format(temperature))
 
-            plot_string += " 'energy_with_phonons.txt' u 2:(${}-{}) w points pt 7 ps 1.5 title '{}', birch_murnaghan_eos_{}(x) lw 2 notitle,".format(list(energies.keys()).index(temperature)+3, renorm_factor, temperature.split("_")[1], temperature)
+            plot_string += " 'energy_with_phonons.txt' u 2:(${}-{}) w points pt 7 ps 1.5 notitle, birch_murnaghan_eos_{}(x) lw 2 notitle,".format(list(energies.keys()).index(temperature)+3, renorm_factor, temperature)
     else:
         plotfile.write("E_0_{} = {}\n".format(temperature, parameters[0]-renorm_factor))
         plotfile.write("V_0_{} = {}\n".format(temperature, parameters[1]))
@@ -199,9 +197,9 @@ for temperature, energy in energies.items():
         plot_string += " 'energy_with_phonons.txt' u 2:(${}-{}) w points pt 7 ps 1.5 notitle, birch_murnaghan_eos_{}(x) lw 2 notitle,".format(list(energies.keys()).index(temperature)+3, renorm_factor, temperature)
 
 if plot_step:
-    plot_string += " 'minimum_energy.txt' u 3:($4-{}) every {}::1 w points pt 9 ps 1.5 lc rgb 'black' notitle\n".format(renorm_factor, plot_step/T_step)
+    plot_string += " 'minimum_energy.txt' u 3:($4-{}) every {}::1 w points pt 8 ps 1.5 lc rgb 'black' notitle\n".format(renorm_factor, plot_step/T_step)
 else:
-    plot_string += " 'minimum_energy.txt' u 3:($4-{}) w points pt 9 ps 1.5 lc rgb 'black' notitle\n".format(renorm_factor)
+    plot_string += " 'minimum_energy.txt' u 3:($4-{}) w points pt 8 ps 1.5 lc rgb 'black' notitle\n".format(renorm_factor)
 plotfile.write(plot_string)
 
 paramfile.close()
