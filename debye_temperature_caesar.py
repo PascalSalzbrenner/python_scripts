@@ -10,8 +10,8 @@ import numpy as np
 def moment_function(freq, n):
 	"""The moment of the frequency which is used"""
 
-	if n < -3:
-		raise(ValueError, "Moments smaller than -3 cannot be calculated.")
+	if n < -2:
+		raise(ValueError, "Moments smaller than -2 cannot be calculated.")
 	elif n == 0:
 		return np.log(freq)
 	else:
