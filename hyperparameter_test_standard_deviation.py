@@ -7,13 +7,14 @@ import numpy as np
 
 # open input and output files
 infile = open("hyperparameter_test.dat", "r")
+outfile = open("hyperparameter_test_standard_deviation.dat", "w")
 
 # set up dictionary to contain the data
 data_dict = {}
 
 # read in the data
-# skip first line, which is just the header
-infile.readline()
+header = infile.readline()
+outfile.write(header)
 
 for line in infile:
     data = line.split()
@@ -32,24 +33,14 @@ for line in infile:
     data_dict[radial_cutoff][polynomials][0].append(rmse)
     data_dict[radial_cutoff][polynomials][1].append(mae)
 
-# close the input file
-infile.close()
-
 # calculate the standard deviation and write to the output file
-
-outfile = open("hyperparameter_test_standard_deviation.dat", "w")
-
-outfile.write("# -r [Ang]; -P; RMSE std [meV/atom]; MAE std [meV/atom]; RMSE [meV/atom]; MAE [meV/atom]\n")
-
 for radial_cutoff in data_dict:
     for polynomials in data_dict[radial_cutoff]:
         rmse_std = np.std(data_dict[radial_cutoff][polynomials][0])
         mae_std = np.std(data_dict[radial_cutoff][polynomials][1])
 
-        rmse_mean = np.mean(data_dict[radial_cutoff][polynomials][0])
-        mae_mean = np.mean(data_dict[radial_cutoff][polynomials][1])
+        outfile.write("%s %s %f %f\n" % (radial_cutoff, polynomials, rmse_std, mae_std))
 
-        outfile.write(f"{radial_cutoff} {polynomials} {rmse_std} {mae_std} {rmse_mean} {mae_mean}\n")
-
-# close the output file
+# close the files
+infile.close()
 outfile.close()
