@@ -106,7 +106,7 @@ datafile.close()
 
 # write plotting commands
 plotfile = open("rdf.gnu", "w")
-plotfile.write("set terminal postscript eps colour font 'Helvectica,20'\n")
+plotfile.write("set terminal postscript eps colour fontfile '/Users/pascalsalzbrenner/bin/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf' font 'OpenSans-Regular,20'\n")
 plotfile.write("set output '| epstopdf --filter --outfile=rdf.pdf'\n")
 plotfile.write("set mxtics 2\n")
 plotfile.write("set mytics 2\n")

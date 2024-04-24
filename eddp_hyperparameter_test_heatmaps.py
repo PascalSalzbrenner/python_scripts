@@ -12,7 +12,7 @@ data = pd.read_csv('hyperparameter_test_average.dat', sep=' ', dtype=column_type
 
 # plot the MAEs
 heatmap_data = data.pivot_table(index='P', columns='r', values='MAE')
-heatmap = sns.heatmap(heatmap_data, cmap="magma_r")
+heatmap = sns.heatmap(heatmap_data, cmap="plasma_r")
 
 plt.xlabel(r'r$_\text{c}$ [$\mathrm{\AA}$]', fontsize=12)
 plt.ylabel('Number of Polynomials, M', fontsize=12)
@@ -36,7 +36,7 @@ plt.clf()
 
 # plot the RMSEs
 heatmap_data = data.pivot_table(index='P', columns='r', values='RMSE')
-heatmap = sns.heatmap(heatmap_data, cmap="magma_r")
+heatmap = sns.heatmap(heatmap_data, cmap="plasma_r")
 
 plt.xlabel(r'r$_\text{c}$ [$\mathrm{\AA}$]', fontsize=12)
 plt.ylabel('Number of Polynomials, M', fontsize=12)

@@ -89,7 +89,7 @@ if task != "bonds":
     # write Gnuplot file
     # these bits will be common to all tasks (except bonds), whereas others depend on the task and are written in the corresponding if-block
     plotfile = open("{}{}.gnu".format(task, input_file_root), "w")
-    plotfile.write("set terminal postscript eps colour font 'Helvectica,20'\n")
+    plotfile.write("set terminal postscript eps colour fontfile '/Users/pascalsalzbrenner/bin/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf' font 'OpenSans-Regular,20'\n")
     plotfile.write("set output '| epstopdf --filter --outfile={}{}.pdf'\n".format(task, input_file_root))
     plotfile.write("set mxtics 2\n")
     plotfile.write("set mytics 2\n")
@@ -356,7 +356,7 @@ elif task == "bond_length" or task == "bond_population":
 
     # plotting stuff
     plotfile.write("set key top right\n")
-    plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque font 'Helvectica,15'\n")
+    plotfile.write("set key box lt -1 lw 2 width 2 height 1.5 opaque font 'OpenSans-Regular,20'\n")
 
     # redefine gnuplot linetypes with nice colours
     plotfile.write("set linetype 1 lc rgb '#3633F5'\n") # same dark blue as used for molecular bonds in VESTA
