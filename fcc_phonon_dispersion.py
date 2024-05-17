@@ -89,9 +89,9 @@ for i in range(len(k_path)-1):
         k_linear.append(np.linalg.norm(k - k1) + offset)
 
         # append the frequencies to the list
-        omega1.append(np.sqrt(r[0]))
-        omega2.append(np.sqrt(r[1]))
-        omega3.append(np.sqrt(r[2]))
+        omega1.append(scale_factor*np.sqrt(r[0]))
+        omega2.append(scale_factor*np.sqrt(r[1]))
+        omega3.append(scale_factor*np.sqrt(r[2]))
 
     if i == len(k_path)-2:
         hsp_linear.append([offset+dk, k_path[i+1]])
