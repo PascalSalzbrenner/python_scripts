@@ -12,7 +12,6 @@ from copy import deepcopy
 from scipy import interpolate
 
 # note that the default labels in the _enthalpy.agr files are chemical_formula-structure_name
-# for consistency with the dev_press_vol files, we use only the structure_name part wherever the name of a structure is concerned
 
 # we convert to int, there is no good reason really to start at fractional pressures, and int makes things cleaner
 low_press = int(sys.argv[1])
@@ -44,7 +43,8 @@ structure_list = [reference_structure]
 quality_list = []
 
 agr_files = [file for file in ls if "enthalpy" in file and file.endswith("agr")]
-agr_files.sort(reverse=True)
+agr_files.sort()
+#agr_files.sort(reverse=True)
 
 for file in agr_files:
 
