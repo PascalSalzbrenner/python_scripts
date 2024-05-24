@@ -155,11 +155,21 @@ for pt_line in pt_lines.values():
     split_pt_line = [pt_line[0]]
 
     for pt_point in pt_line[1:]:
-        if np.isclose(abs(pt_point[1]-split_pt_line[-1][1]), t_step):
+        if abs(pt_point[1]-split_pt_line[-1][1]) < 2*t_step:
+        #if np.isclose(abs(pt_point[1]-split_pt_line[-1][1]), t_step):
             # continuous line
             split_pt_line.append(pt_point)
         else:
             # there is a split in the line here
+
+            if len(split_pt_lines) > 1:
+                # check if this point belongs with any already saved line
+                for i in range(len(split_pt_lines)):
+                    if abs(pt_point[1]-split_pt_lines[i][-1][1]) < 2*t_step:
+                    #if np.isclose(abs(pt_point[1]-split_pt_lines[i][-1][1]), t_step):
+                        split_pt_lines[i].append(pt_point)
+                        break
+
             # add the existing list to the list of split lines and start a new list
             split_pt_lines.append(deepcopy(split_pt_line))
             split_pt_line = [pt_point]
