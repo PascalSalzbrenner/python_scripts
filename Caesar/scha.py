@@ -21,6 +21,7 @@
 
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 ######################################################## Setup ########################################################
@@ -31,6 +32,7 @@ def quartic_function(x, omega2, lam):
 	return 0.5*omega2*x*x+0.25*lam*x**4
 
 def scha_newton_raphson(temp):
+	"""Newton-Raphson solver for the self-consistent harmonic fit"""
 
 	xn=np.sqrt(abs(omega2))
 	for i in range(1000):
@@ -97,15 +99,22 @@ with open("energy.dat", "r") as energy_file:
 		if np.isclose(float(disp_index), 0):
 			static_energy = float(energy)
 
-disp_indices = np.array(disp_indices)*amplitude/max_point
+disp_amplitudes = np.array(disp_indices)*amplitude/max_point
 energies = (np.array(energies)-static_energy)/(supercell_size*ev_to_hartree)
 
-parameters, covariance = curve_fit(quartic_function, disp_indices, energies)
-
-############################################ Self-consistent harmonic fit #############################################
+parameters, covariance = curve_fit(quartic_function, disp_amplitudes, energies)
 
 omega2 = parameters[0]
 lam = parameters[1]
+
+displacement_fit_displacements = np.linspace(np.min(disp_amplitudes), np.max(disp_amplitudes), num=int((np.max(disp_indices)-np.min(disp_indices))*100))
+displacement_fit_energies = quartic_function(displacement_fit_displacements, omega2, lam)
+
+plt.plot(disp_amplitudes, energies, 'o', displacement_fit_displacements, displacement_fit_energies, '-')
+plt.savefig("quartic_fit.png", dpi=300)
+plt.close()
+
+############################################ Self-consistent harmonic fit #############################################
 
 temperatures = []
 scha_energies_hartree = []
