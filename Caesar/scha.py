@@ -64,6 +64,7 @@ kb=8.6173303E-5/ev_to_hartree
 tol=1E-6
 
 # input parameters
+# frequency in Hartree
 frequency = float(sys.argv[1])
 
 # divide energy by the size of the supercell in which it was calculated
