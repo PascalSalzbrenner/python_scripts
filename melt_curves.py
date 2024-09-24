@@ -38,7 +38,7 @@ for file in melt_files:
 	infile.close()
 
 # read experimental data
-if ["experimental_data.dat" in ls]:
+if "experimental_data.dat" in ls:
 	exp_data = open("experimental_data.dat", "r")
 
 	exp_pressures = []
@@ -88,7 +88,7 @@ for label, data in melting_points.items():
 	plt.plot(data[0], data[1], color=colours[label_list.index(label)], linestyle="solid", label=label)
 	plt.fill_between(data[0], np.array(data[1])+np.array(data[2]), np.array(data[1])-np.array(data[2]), color=colours[label_list.index(label)], alpha=0.5)
 
-if ["experimental_data.dat" in ls]:
+if "experimental_data.dat" in ls:
 	plt.errorbar(exp_pressures, exp_melting_points, yerr=exp_errors, fmt="x", color="#000080", label="Experimental data")
 
 plt.legend()
