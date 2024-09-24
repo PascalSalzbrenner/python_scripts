@@ -70,7 +70,7 @@ press_range=high_press-low_press
 plt.xlim(low_press, high_press)
 
 # determine sensible tick spacing on the x-axis
-max = round(press_range/50)*5
+max = round(press_range/50)*15
 
 for i in range(max, 0, -1):
 
