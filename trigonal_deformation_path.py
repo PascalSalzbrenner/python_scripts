@@ -12,9 +12,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-from Caesar.calculate_phonon_pressure import fit_energies
-from dft_eddp_dev_enthalpies import enthalpy
-
 
 ################################################ Definitions and setup ################################################
 
@@ -31,9 +28,9 @@ def birch_murnaghan_eos(V, E_0, V_0, B_0, B_prime):
 pressure_conversion = 160.21766208
 
 # get pressure range in GPa
-min_press = int(sys.argv[0])
-max_press = int(sys.argv[1])
-press_step = int(sys.argv[2])
+min_press = int(sys.argv[1])
+max_press = int(sys.argv[2])
+press_step = int(sys.argv[3])
 
 # in the end, we need lists of angles, optimum volumes at the respective angles, and corresponding optimum energies
 # once for each pressure, so we set up a dictionary for this
@@ -56,27 +53,27 @@ for file in ls:
     # note that the angles here will be str, which is useful for dict keys
     angle = file.split("-")[1]
 
-    if not angle in data_dict.keys():
+    if not round(float(angle), 5) in data_dict.keys():
         # first list volumes, second list single-point energies
-        data_dict[angle] = [[], []]
+        data_dict[round(float(angle), 5)] = [[], []]
 
     with open(file) as f:
         data = f.readline().split()
-        data_dict[angle][0].append(float(data[3]))
-        data_dict[angle][1].append(float(data[4]))
+        data_dict[round(float(angle), 5)][0].append(float(data[3]))
+        data_dict[round(float(angle), 5)][1].append(float(data[4]))
 
 ################################## Minimisation of energy for each pressure and angle ##################################
 
-for press in range(min_press, max_press, press_step):
+for press in range(min_press, max_press+1, press_step):
 
     press_list.append(press)
 
     output_dict[press] = [[], [], []]
 
-    for angle, data in data_dict.items():
+    for angle, data in sorted(data_dict.items()):
         volumes = np.array(data[0])
-        energies = np.array(data[1]) + volumes * press/pressure_conversion
-        energies -= np.min(energies)
+        energies = (np.array(data[1]) + volumes * press/pressure_conversion)#*1000
+        #energies -= np.min(energies)
         parameters, covariance = curve_fit(birch_murnaghan_eos, volumes, energies,
                                            bounds=((2 * min(energies), volumes[0], 0, -np.inf),
                                                    (max(energies), volumes[-1], np.inf, np.inf)), maxfev=100000)
@@ -87,7 +84,7 @@ for press in range(min_press, max_press, press_step):
 
         # plot spot checks
 
-        if angle % 10 == 0:
+        if int(angle) % 10 == 0:
             fit_volumes = np.arange(volumes[0], volumes[-1], 0.001)
             fit_energies = []
 
@@ -109,7 +106,7 @@ for press, data in output_dict.items():
     # write out data
     with open("trigonal_deformation_path_{}_GPa.txt".format(press), "w") as f:
 
-        f.write("# Angle [°]; Optimum Volume [A**3]; Minimum Energy [eV]\n")
+        f.write("# Angle [°]; Optimum Volume [A**3]; Minimum Energy [meV]\n")
 
         for i in range(len(data[0])):
 
@@ -118,10 +115,16 @@ for press, data in output_dict.items():
     # plotting
     # define index such that pressure increases from bottom to top
     index = -1-press_list.index(press)
-    axes[index].plot(data[0], data[2])
-    axes[index].set_ylabel("Energy [eV]")
+    axes[index].plot(data[0], np.array(data[2])*1000-np.min(data[2])*1000, color="#DC143C", linewidth=2)
+    axes[index].set_ylim(0, 100)
+    axes[index].set_yticks(np.arange(0, 101, 25))
+    axes[index].set_ylabel("{} GPa".format(press), fontsize=15)
+    if press_list.index(press) == len(output_dict.keys())-1:  # Title for the top subplot
+        axes[index].set_title("Relative Enthalpy [meV]", fontsize=15)
+    axes[index].tick_params(axis='both', which='major', labelsize=12)
 
-axes[-1].set_xlabel("Angle [°]")
+axes[-1].set_xticks(np.arange(60,111,5))
+axes[-1].set_xlabel("Angle [°]", fontsize=15)
 plt.savefig("trigonal_deformation_path_{}-{}_GPa.png".format(min_press, max_press), dpi=300)
 
 
