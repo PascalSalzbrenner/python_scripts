@@ -40,10 +40,10 @@ def read_hsp():
 
 def locate_hsps(filename, hsp_list):
     """Function to locate high-symmetry points in a .bands file using the information from hsp.dat
-    :input str filename: name of the file in which we search the hsp data
-    :input list[list[str]] hsp_list: list of high-symmetry points produced by read_hsp
+    :param str filename: name of the file in which we search the hsp data
+    :param list[list[str]] hsp_list: list of high-symmetry points produced by read_hsp
 
-    :returns list[int]: the numbers of the k-points"""
+    :returns list[int] k_points: the numbers of the k-points"""
 
     k_points = []
 
@@ -52,7 +52,7 @@ def locate_hsps(filename, hsp_list):
         file_text = f.read()
 
     for k_point in hsp_list:
-        pattern = re.compile(r"K-point\s+[0-9]+\s+{}\.*0+\s+{}\.*0+\s+{}\.*0+".format(k_point[0], k_point[1], k_point[2]))
+        pattern = re.compile(r"K-point\s+[0-9]+\s+{}\.*0+\s+{}\.*0+\s+{}\.*0+\s+".format(k_point[0], k_point[1], k_point[2]))
 
         for match in pattern.findall(file_text):
             index = int(match.split()[1])
@@ -134,6 +134,7 @@ for file in bands_files:
 
     # y-data is automatically sorted due to the way we've set it up
     # x-data must be sorted to correspond to this
+    # transpose the y_data to put it in a format easy to plot with pyplot
     data_dict[file_identifier] = sorted(x_data).copy(), np.array(y_data[:]).transpose()
 
 ### plotting ###
