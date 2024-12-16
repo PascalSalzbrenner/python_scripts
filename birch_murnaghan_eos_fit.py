@@ -8,7 +8,6 @@ import math
 import numpy as np
 from scipy.optimize import curve_fit
 
-
 # define Birch-Murnaghan equation of state for E(V) - V is input, the other variables are
 # parameters to be fit
 def birch_murnaghan_eos(V, E_0, V_0, B_0, B_prime):
