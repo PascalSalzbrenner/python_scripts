@@ -8,6 +8,9 @@ import math
 import numpy as np
 from scipy.optimize import curve_fit
 
+from birch_murnaghan_eos_fit_thermal_expansion import prefactor
+
+
 # define Birch-Murnaghan equation of state for E(V) - V is input, the other variables are
 # parameters to be fit
 def birch_murnaghan_eos(V, E_0, V_0, B_0, B_prime):
@@ -28,6 +31,8 @@ elif spacegroup.startswith("F"):
 elif spacegroup.startswith("I"):
     # BCC
     prefactor = 0.25
+else:
+    prefactor = 1
 
 # conversion factor from Angstrom to Bohr
 angstrom_to_bohr = 1.8897261254578281

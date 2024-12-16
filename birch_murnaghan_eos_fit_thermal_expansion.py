@@ -52,6 +52,8 @@ elif structure_type.lower().startswith("f"):
 elif structure_type.lower().startswith("b"):
     # BCC
     prefactor = 0.25
+else:
+    prefactor = 1
 
 # define x and y data
 lattice_parameters = []
