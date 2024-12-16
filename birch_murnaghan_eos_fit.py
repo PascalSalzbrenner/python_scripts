@@ -8,8 +8,6 @@ import math
 import numpy as np
 from scipy.optimize import curve_fit
 
-from birch_murnaghan_eos_fit_thermal_expansion import prefactor
-
 
 # define Birch-Murnaghan equation of state for E(V) - V is input, the other variables are
 # parameters to be fit
