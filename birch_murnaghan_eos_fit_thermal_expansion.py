@@ -43,16 +43,17 @@ else:
     factor = 1000
 
 # determine prefactor according to structure_type
-if structure_type.lower().startswith("p") or structure_type.lower().startswith("s"):
-    # simple cubic
-    prefactor = 1
-elif structure_type.lower().startswith("f"):
+if structure_type.lower().startswith("f"):
     # FCC
     prefactor = 0.5
 elif structure_type.lower().startswith("b"):
     # BCC
     prefactor = 0.25
+elif structure_type[0].isdigit():
+    # custom prefactor passed in the variable
+    prefactor = float(structure_type)
 else:
+    # default & correct for simple cubic
     prefactor = 1
 
 # define x and y data
