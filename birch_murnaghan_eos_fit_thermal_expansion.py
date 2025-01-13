@@ -172,7 +172,7 @@ plot_string = "plot" # there is one plot command at the end, so we generate the 
 # fit Birch-Murnaghan EOS at every temperature
 for temperature, energy in energies.items():
 
-    parameters, covariance = curve_fit(birch_murnaghan_eos, volumes, energy, bounds=((2*min(energy), volumes[0], 0, -np.inf),
+    parameters, covariance = curve_fit(birch_murnaghan_eos, volumes, energy, bounds=((1.1*min(energy), volumes[0], 0, -np.inf),
     (max(energy), volumes[-1], np.inf, np.inf)), maxfev=100000) # impose very general boundaries to ensure correct result
     # if the sampling in geometry_optimisation_cubic is anywhere near reasonable, this reliably gives the right result
 

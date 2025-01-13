@@ -49,7 +49,7 @@ with open("energy.txt", "r") as energyfile:
         energies.append(float(line.split()[2])) # energy
 
 parameters, covariance = curve_fit(birch_murnaghan_eos, volumes, energies,
-bounds=((2*min(energies), volumes[0], 0, -np.inf), (max(energies), volumes[-1], np.inf, np.inf)),
+bounds=((1.1*min(energies), volumes[0], 0, -np.inf), (max(energies), volumes[-1], np.inf, np.inf)),
 maxfev=100000) # impose very general boundaries to ensure correct result
 # if the sampling in geometry_optimisation_cubic is anywhere near reasonable,
 # this reliably gives the right result
